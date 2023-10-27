@@ -24,9 +24,11 @@ export default {
       gas: 2100000,
       gasPrice: 8000000000,
     },
-    mainnet: {
+    topos: {
       url: process.env.RPC_URL,
       accounts: [process.env.WALLET_SECRET],
+      gas: 2100000,
+      gasPrice: 8000000000,
     },
   },
   typechain: {

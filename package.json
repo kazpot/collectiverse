@@ -11,8 +11,10 @@
     "frontend": "cd frontend && yarn build && yarn start",
     "env:local": "cp .env.local .env && cd frontend && cp .env.local .env",
     "env:mumbai": "cp .env.mumbai .env && cd frontend && cp .env.mumbai .env",
+    "env:topos": "cp .env.topos .env && cd frontend && cp .env.topos .env",
     "deploy:local": "yarn env:local && npx hardhat run scripts/deploy.local.ts --network localhost",
-    "deploy:mumbai": "yarn env:mumbai && npx hardhat run scripts/deploy.mumbai.ts --network mumbai"
+    "deploy:mumbai": "yarn env:mumbai && npx hardhat run scripts/deploy.mumbai.ts --network mumbai",
+    "deploy:topos": "yarn env:topos && npx hardhat run scripts/deploy.topos.ts --network topos"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
