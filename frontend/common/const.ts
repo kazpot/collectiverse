@@ -46,6 +46,12 @@ export const chains: {
     nativeSymbol: 'MATIC',
     auctionSymbol: 'WMATIC',
   },
+  // Topos
+  2359: {
+    chainName: 'TOPOS',
+    nativeSymbol: 'TOPOS',
+    auctionSymbol: 'WTOPOS',
+  },
   // Private chain
   1337: {
     chainName: 'LOCAL',
