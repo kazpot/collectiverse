@@ -25,9 +25,6 @@ contract Exchange is ReentrancyGuard, Ownable {
     // buy/sell orders
     mapping(bytes32 => bool) public orders;
 
-    // approved sellers
-    mapping(address => bool) public approvedSellers;
-
     // commission / BASIS_UNIT = 0.03
     uint256 private constant BASIS_UNIT = 1000;
     // 15%
@@ -335,16 +332,6 @@ contract Exchange is ReentrancyGuard, Ownable {
         _registry.setNewProxyImpl(newImpl);
     }
 
-    function approveArtist(address artist) external onlyOwner {
-        require(artist != address(0));
-        approvedSellers[artist] = true;
-    }
-
-    function isApproved(address artist) public view returns (bool) {
-        require(artist != address(0));
-        return approvedSellers[artist];
-    }
-
     function proxyImplementation() public view returns (ExchangeProxyImpl) {
         ExchangeProxy proxy = ExchangeProxy(_registry.proxies(address(this)));
         require(address(proxy) != address(0));
@@ -361,11 +348,6 @@ contract Exchange is ReentrancyGuard, Ownable {
             (msg.sender == order.maker && order.taker == address(0)) ||
                 (msg.sender == order.taker && order.maker == address(0))
         );
-
-        // only approved sellers or resellers can list NFT
-        if (order.side == Side.Sell) {
-            require(approvedSellers[order.maker] || approvedSellers[order.royaltyRecipient]);
-        }
 
         bytes32 hash = hashOrder(order);
         require(!orders[hash]);
