@@ -195,8 +195,11 @@ const CollectionView = ({ collection, averagePrice, tradeVolume }: Props) => {
             </Button>
           )}
           <TwitterShareButton
-            url={`https://artbase.com${router.pathname.replace('[id]', collection.collectionId)}`}
-            title={`Check out Collection "${collection.name}" on ARTBASE!!`}
+            url={`https://collectiverse.com${router.pathname.replace(
+              '[id]',
+              collection.collectionId,
+            )}`}
+            title={`Check out Collection "${collection.name}" on COLLECTIVERSE!!`}
           >
             <Button
               sx={{

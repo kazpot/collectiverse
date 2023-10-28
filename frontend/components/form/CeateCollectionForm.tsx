@@ -149,7 +149,8 @@ export default function CreateCollectionForm({ collNames, collIds }: Props) {
         <Typography>URL</Typography>
         <Typography variant='subtitle1'>
           <Typography variant='caption'>
-            Customize your URL on ARTBASE. Must only contain lowercase letters,numbers, and hyphens.
+            Customize your URL on COLLECTIVERSE. Must only contain lowercase letters,numbers, and
+            hyphens.
           </Typography>
         </Typography>
         <TextField
@@ -168,7 +169,9 @@ export default function CreateCollectionForm({ collNames, collIds }: Props) {
           }}
           InputProps={{
             startAdornment: (
-              <InputAdornment position='start'>https://artbase.com/collection/</InputAdornment>
+              <InputAdornment position='start'>
+                https://collectiverse.com/collection/
+              </InputAdornment>
             ),
           }}
           onChange={handleChange}

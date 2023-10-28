@@ -267,10 +267,10 @@ export default function Profile({ userProfile }: Props) {
         </ListItem>
         <Divider />
         <TwitterShareButton
-          url={`https://artbase.com${router.pathname.replace('[id]', currentUserAddress)}`}
+          url={`https://collectiverse.com${router.pathname.replace('[id]', currentUserAddress)}`}
           title={`Check out cool NFT by @${
             userProfile.twitter ? userProfile.twitter : ''
-          } on @ARTBASE!!`}
+          } on @collectiverse!!`}
         >
           <TwitterIcon style={{ margin: '20px' }} size='40px' round />
         </TwitterShareButton>
