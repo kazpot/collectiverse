@@ -9,7 +9,7 @@ contract NFT is ERC721URIStorage {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
-    constructor() ERC721("Art Base", "ABS") {}
+    constructor() ERC721("CollectiVerse", "COV") {}
 
     function createToken(string memory tokenURI) public returns (uint256) {
         _tokenIds.increment();
