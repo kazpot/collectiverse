@@ -199,7 +199,7 @@ const CollectionView = ({ collection, averagePrice, tradeVolume }: Props) => {
               '[id]',
               collection.collectionId,
             )}`}
-            title={`Check out Collection "${collection.name}" on COLLECTIVERSE!!`}
+            title={`Check out Collection "${collection.name}" on CollectiVerse!!`}
           >
             <Button
               sx={{

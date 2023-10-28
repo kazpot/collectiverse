@@ -149,7 +149,7 @@ export default function CreateCollectionForm({ collNames, collIds }: Props) {
         <Typography>URL</Typography>
         <Typography variant='subtitle1'>
           <Typography variant='caption'>
-            Customize your URL on COLLECTIVERSE. Must only contain lowercase letters,numbers, and
+            Customize your URL on CollectiVerse. Must only contain lowercase letters,numbers, and
             hyphens.
           </Typography>
         </Typography>

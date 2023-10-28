@@ -119,7 +119,7 @@ export default function Layout({ title, description, children }: Props) {
   return (
     <div>
       <Head>
-        <title>{title ? `${title} - COLLECTIVERSE` : 'COLLECTIVERSE'}</title>
+        <title>{title ? `${title} - CollectiVerse` : 'CollectiVerse'}</title>
         {description && <meta name='description' content={description}></meta>}
       </Head>
       <ThemeProvider theme={theme}>
@@ -128,7 +128,7 @@ export default function Layout({ title, description, children }: Props) {
           <Toolbar sx={classes.toolbar}>
             <NextLink href='/' passHref>
               <Link style={{ textDecoration: 'none' }}>
-                <Typography sx={classes.brand}>COLLECTIVERSE</Typography>
+                <Typography sx={classes.brand}>CollectiVerse</Typography>
               </Link>
             </NextLink>
             <Box
@@ -189,7 +189,7 @@ export default function Layout({ title, description, children }: Props) {
         </AppBar>
         {children}
         <footer style={{ marginTop: 10, textAlign: 'center' }}>
-          <Typography>@2023 COLLECTIVERSE</Typography>
+          <Typography>@2023 CollectiVerse</Typography>
         </footer>
       </ThemeProvider>
       <TopSnackbar text={topSnackText} open={topSnackOpen} />
