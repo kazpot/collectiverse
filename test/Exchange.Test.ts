@@ -59,9 +59,6 @@ describe("Exchange", () => {
 
     exchange = (await deployContract(owner, ExchangeAbi)) as Exchange;
 
-    await exchange.approveArtist(await owner.getAddress());
-    await exchange.approveArtist(await seller.getAddress());
-
     commissionFeeRecipient = (await deployContract(
       owner,
       CommissionFeeRecipientAbi
