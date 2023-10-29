@@ -69,9 +69,6 @@ async function main() {
   const amount = ethers.utils.parseUnits("100", "ether");
   await mockWETH.approve(owner.address, amount.mul(5));
 
-  await exchange.approveArtist(owner.address);
-  await exchange.approveArtist(user1.address);
-
   await mockWETH.transferFrom(owner.address, user1.address, amount);
   const user1Balance = await mockWETH.balanceOf(user1.address);
   console.log(

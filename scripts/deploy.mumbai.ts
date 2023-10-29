@@ -59,8 +59,6 @@ async function main() {
   const nft = await NFT.deploy();
   await nft.deployed();
 
-  await exchange.approveArtist(owner.address);
-
   console.log("✅ exchange address:", exchange.address);
   console.log(
     "✅ commissionFeeRecipent address:",
