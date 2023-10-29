@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { mint, list, isApproved } from '../../service/order';
+import { mint, list } from '../../service/order';
 import {
   Button,
   Grid,
@@ -65,18 +65,18 @@ export default function MintForm({ tagOptions, categoryOptions, collections }: P
   const [progress, setProgress] = useState<number>(0);
 
   useEffect(() => {
-    async function init() {
-      try {
-        const res = await isApproved();
-        if (!res) {
-          router.push('/');
-        }
-      } catch (e: any) {
-        console.log(e);
-        router.push('/');
-      }
-    }
-    init();
+    // async function init() {
+    //   try {
+    //     const res = await isApproved();
+    //     if (!res) {
+    //       router.push('/');
+    //     }
+    //   } catch (e: any) {
+    //     console.log(e);
+    //     router.push('/');
+    //   }
+    // }
+    // init();
   });
 
   const handleChange = (e: any) => {

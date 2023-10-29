@@ -25,6 +25,7 @@ import Collection from '../../../models/Collection';
 import Nft from '../../../models/Nft';
 import { getUserItemsByTokenIds } from '../../../service/item';
 import List from '../../../models/List';
+import { ethers } from 'ethers';
 
 function TabPanel(props: any) {
   const { children, value, index, ...other } = props;
@@ -153,7 +154,7 @@ const Assets = ({
 
 export const getServerSideProps: GetServerSideProps = async ({ query }: { query: any }) => {
   await db.connect();
-  const userAddress = query.id;
+  const userAddress = ethers.utils.getAddress(query.id);
   const userProfile = await getUserProfile(userAddress);
 
   // collections

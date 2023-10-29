@@ -13,17 +13,6 @@ const wethAddress = process.env.NEXT_PUBLIC_WETH_ADDRESS || '';
 const apiServerUri = process.env.NEXT_PUBLIC_API_SERVER_URI || '';
 
 /**
- * Check if current user is approved
- * @returns
- */
-export const isApproved = async (): Promise<boolean> => {
-  const signer = await getCurrentUser();
-  const exchange = new ethers.Contract(exchangeAddress, Exchange.abi, signer);
-  const res = await exchange.isApproved(signer.getAddress());
-  return res;
-};
-
-/**
  * Mint NFT
  * @param imageUrl
  * @param name
@@ -117,18 +106,6 @@ export const list = async (
 
     const nft = new ethers.Contract(nftAddress, NFT.abi, signer);
     const exchange = new ethers.Contract(exchangeAddress, Exchange.abi, signer);
-
-    // TODO: Allow collector to list second-hand items without approval?
-    // minter artist must be approved
-    const approved = await exchange.isApproved(item.minter);
-    if (!approved) {
-      return {
-        result: false,
-        listTxHash: null,
-        listedItem: null,
-        reason: 'Minter is not approved',
-      };
-    }
 
     const proxyImplAddress = await exchange.proxyImplementation();
 

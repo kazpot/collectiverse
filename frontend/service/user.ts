@@ -4,12 +4,27 @@ import { getCurrentUser } from '../common/util';
 
 const apiServerUri = process.env.NEXT_PUBLIC_API_SERVER_URI || '';
 
-export const authUser = async (userAddr: string): Promise<boolean> => {
+export const signUp = async (userAddr: string): Promise<boolean> => {
   try {
     const currentUser = await getCurrentUser();
     const sig = await currentUser.signMessage(userAddr);
     const res = await axios.post('/api/users/', { address: userAddr, sig });
     if (res.status !== 200) {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+};
+
+export const isUser = async (): Promise<boolean> => {
+  try {
+    const currentUser = await getCurrentUser();
+    const userAddress = await currentUser.getAddress();
+    const userProfile = await getUserProfile(userAddress);
+    if (!userProfile) {
       return false;
     }
     return true;

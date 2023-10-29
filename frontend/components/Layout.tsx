@@ -20,12 +20,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/configureStore';
 import { darkModeOff, darkModeOn } from '../actions/dark.actions';
 import { useEffect, useState } from 'react';
-import { isApproved } from '../service/order';
+import { signUp, isUser } from '../service/user';
 import { useRouter } from 'next/router';
-import { shortAddress } from '../common/util';
+import { getCurrentUser, shortAddress } from '../common/util';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import classes from '../utils/classes';
-import TopSnackbar from './TopSnackbar';
 import { chains } from '../common/const';
 
 type Props = {
@@ -42,23 +41,14 @@ export default function Layout({ title, description, children }: Props) {
   const currentUserAddress: string = useSelector((state: RootState) => state.currentUser);
   const chainId: number = parseInt(useSelector((state: RootState) => state.chainId));
 
-  const [approved, setApproved] = useState(false);
+  const [signed, setSigned] = useState(false);
   const [query, setQuery] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
-  const [topSnackOpen, setTopSnackOpen] = useState(false);
-  const [topSnackText, setTopSnackText] = useState('');
 
   useEffect(() => {
     async function init() {
-      try {
-        const res = await isApproved();
-        setApproved(res);
-        setTopSnackOpen(false);
-      } catch (e: any) {
-        setTopSnackOpen(true);
-        setTopSnackText('Please check if your wallet connects to right chain');
-        console.log(e);
-      }
+      const res = await isUser();
+      setSigned(res);
     }
     init();
   });
@@ -116,6 +106,17 @@ export default function Layout({ title, description, children }: Props) {
     router.push('/create-collection');
   };
 
+  const handleSignIn = async () => {
+    const res = await isUser();
+    if (!res) {
+      const user = await getCurrentUser();
+      await signUp(await user.getAddress());
+      setSigned(true);
+    } else {
+      setSigned(true);
+    }
+  };
+
   return (
     <div>
       <Head>
@@ -159,7 +160,7 @@ export default function Layout({ title, description, children }: Props) {
               <NextLink href='/search' passHref>
                 <Link style={{ textDecoration: 'none' }}>Explore</Link>
               </NextLink>
-              {approved && (
+              {signed && (
                 <NextLink href={`/create/${currentUserAddress}`} passHref>
                   <Link style={{ textDecoration: 'none' }}>Create</Link>
                 </NextLink>
@@ -169,7 +170,9 @@ export default function Layout({ title, description, children }: Props) {
                 sx={classes.navbarButton}
                 onClick={userClickHandler}
               >
-                {chains[chainId] && shortAddress(currentUserAddress, chains[chainId].chainName)}
+                {signed && chains[chainId]
+                  ? shortAddress(currentUserAddress, chains[chainId].chainName)
+                  : 'AnonUser'}
               </Button>
               <Menu
                 id='user-menu'
@@ -177,13 +180,22 @@ export default function Layout({ title, description, children }: Props) {
                 open={Boolean(anchorEl)}
                 onClose={userMenuCloseHandler}
               >
-                <MenuItem onClick={aboutHandler}>View Profile</MenuItem>
-                {approved && <MenuItem onClick={collectionHandler}>Create Collection</MenuItem>}
+                {signed && <MenuItem onClick={aboutHandler}>View Profile</MenuItem>}
+                {signed && <MenuItem onClick={collectionHandler}>Create Collection</MenuItem>}
                 <MenuItem>
                   Dark Mode <DarkModeIcon style={{ verticalAlign: 'middle' }} />
                   <Switch checked={darkMode} onChange={darkModeChangeHandler}></Switch>
                 </MenuItem>
               </Menu>
+              {!signed && (
+                <Button
+                  aria-controls='user-menu'
+                  sx={classes.navbarButton}
+                  onClick={() => handleSignIn()}
+                >
+                  SignIn
+                </Button>
+              )}
             </div>
           </Toolbar>
         </AppBar>
@@ -192,7 +204,6 @@ export default function Layout({ title, description, children }: Props) {
           <Typography>@2023 CollectiVerse</Typography>
         </footer>
       </ThemeProvider>
-      <TopSnackbar text={topSnackText} open={topSnackOpen} />
     </div>
   );
 }
