@@ -47,6 +47,7 @@ contract Exchange is ReentrancyGuard, Ownable {
         bytes32 s;
     }
 
+    // FIXME: paymentToken is no longer needed
     struct Order {
         // this contract address
         address exchange;
@@ -139,24 +140,7 @@ contract Exchange is ReentrancyGuard, Ownable {
     }
 
     /**
-     * @dev Tranfer tokens (only for WETH)
-     * @param token specific token contract address
-     * @param from from address
-     * @param to to address
-     * @param amount amount
-     */
-    function _transferToken(
-        address token,
-        address from,
-        address to,
-        uint256 amount
-    ) private {
-        require(_registry.contracts(address(this)));
-        require(ERC20(token).transferFrom(from, to, amount));
-    }
-
-    /**
-     * @dev this is called when the bid was accepted by seller or buy now by buyer
+     * @dev This is called when the bid was accepted by seller or buy now by buyer
      * @param buy buy order
      * @param sell sell order
      */
@@ -164,80 +148,54 @@ contract Exchange is ReentrancyGuard, Ownable {
         private
         returns (uint256)
     {
-        // hammer price must be greater than sell price
+        // closing price must be greater than sell price
         uint256 sellPrice = sell.basePrice;
-        uint256 hammerPrice = buy.basePrice;
-        require(hammerPrice >= sellPrice);
+        uint256 closingPrice = buy.basePrice;
+        require(closingPrice >= sellPrice);
 
         uint256 commission;
-        if (sell.paymentToken != address(0) && sell.maker == msg.sender) {
-            require(msg.value == 0);
-            // maker receives sales amount
-            _transferToken(
-                sell.paymentToken,
-                buy.taker,
-                sell.maker,
-                hammerPrice
-            );
+
+        // auction
+        if (sell.maker == msg.sender) {
+            sell.maker.transfer(closingPrice);
 
             if (sell.royaltyRecipient != address(0)) {
-                commission = (hammerPrice * _secondCommissionFee) / BASIS_UNIT;
-                uint256 royalty = (hammerPrice * _royalty) / BASIS_UNIT;
+                commission = (closingPrice * _secondCommissionFee) / BASIS_UNIT;
+                uint256 royalty = (closingPrice * _royalty) / BASIS_UNIT;
 
-                // NFT minter receives royalty fee
-                _transferToken(
-                    sell.paymentToken,
-                    sell.maker,
-                    sell.royaltyRecipient,
-                    royalty
-                );
-
-                // exchange receives commission fee
-                _transferToken(
-                    sell.paymentToken,
-                    sell.maker,
-                    _commissionFeeRecipent,
-                    commission
-                );
+                sell.royaltyRecipient.transfer(royalty);
+                _commissionFeeRecipent.transfer(commission);
             } else {
-                commission = (hammerPrice * _commissionFee) / BASIS_UNIT;
-
-                // exchange receives commission fee
-                _transferToken(
-                    sell.paymentToken,
-                    sell.maker,
-                    _commissionFeeRecipent,
-                    commission
-                );
+                commission = (closingPrice * _commissionFee) / BASIS_UNIT;
+                _commissionFeeRecipent.transfer(commission);
             }
-        } else if (sell.paymentToken == address(0) && buy.taker == msg.sender) {
-            require(msg.value >= hammerPrice);
+        // buy now 
+        } else if (buy.taker == msg.sender) {
+            require(msg.value >= closingPrice);
             if (sell.royaltyRecipient != address(0)) {
-                commission = (hammerPrice * _secondCommissionFee) / BASIS_UNIT;
-                uint256 royalty = (hammerPrice * _royalty) / BASIS_UNIT;
+                commission = (closingPrice * _secondCommissionFee) / BASIS_UNIT;
+                uint256 royalty = (closingPrice * _royalty) / BASIS_UNIT;
 
                 // maker receives sales amount
-                uint256 receiveAmount = hammerPrice - commission - royalty;
+                uint256 receiveAmount = closingPrice - commission - royalty;
                 sell.maker.transfer(receiveAmount);
 
                 // NFT minter receives royalty fee
                 sell.royaltyRecipient.transfer(royalty);
-
                 // exchange receives commission fee
                 _commissionFeeRecipent.transfer(commission);
             } else {
-                commission = (hammerPrice * _commissionFee) / BASIS_UNIT;
+                commission = (closingPrice * _commissionFee) / BASIS_UNIT;
 
                 // maker receives sales amount
-                uint256 receiveAmount = hammerPrice - commission;
+                uint256 receiveAmount = closingPrice - commission;
                 sell.maker.transfer(receiveAmount);
-
                 // exchange receives commission fee
                 _commissionFeeRecipent.transfer(commission);
             }
         }
 
-        return hammerPrice;
+        return closingPrice;
     }
 
     function hashOrder(Order memory order) private pure returns (bytes32 hash) {
@@ -317,13 +275,51 @@ contract Exchange is ReentrancyGuard, Ownable {
     }
 
     /**
-     * Create sell/buy order
+     * Create sell order
      */
     function createOrder(Order memory order) external {
+        require(msg.sender == order.maker && order.taker == address(0));
+
+        bytes32 hash = hashOrder(order);
+        require(!orders[hash]);
+
+        // NEW: transfer NFT to escrow account
+        ExchangeProxyImpl impl = proxyImplementation();
         require(
-            (msg.sender == order.maker && order.taker == address(0)) ||
-                (msg.sender == order.taker && order.maker == address(0))
+            impl.invoke(order.nftAddress, order.maker, address(this), order.tokenId)
         );
+
+        orders[hash] = true;
+        emit OrderCreated(
+            order.side,
+            hash,
+            order.maker,
+            order.taker,
+            order.royaltyRecipient,
+            order.nftAddress,
+            order.tokenId,
+            order.basePrice,
+            order.listingTime,
+            order.expirationTime,
+            order.paymentToken
+        );
+    }
+
+    /**
+     * Create bid order
+     */
+    function createBidOrder(Order memory order, Order memory prevOrder) external payable {
+        require(msg.sender == order.taker && order.maker == address(0));
+
+        // New bid must be greater than prev bid
+        require(order.basePrice > prevOrder.basePrice);
+
+        // Send bid price to escrow account
+        require(msg.value == order.basePrice);
+
+        // Refund previous bid from escrow account to buyer
+        prevOrder.taker.transfer(prevOrder.basePrice);
+        _cancelPrevBidOrder(prevOrder);
 
         bytes32 hash = hashOrder(order);
         require(!orders[hash]);
@@ -344,18 +340,79 @@ contract Exchange is ReentrancyGuard, Ownable {
     }
 
     /**
-     * Cancel order
+     * Create bid order
+     */
+    function createFirstBidOrder(Order memory order) external payable {
+        require(msg.sender == order.taker && order.maker == address(0));
+
+        bytes32 hash = hashOrder(order);
+        require(!orders[hash]);
+
+         // Send bid price to escrow account
+        require(msg.value == order.basePrice);
+
+        orders[hash] = true;
+        emit OrderCreated(
+            order.side,
+            hash,
+            order.maker,
+            order.taker,
+            order.royaltyRecipient,
+            order.nftAddress,
+            order.tokenId,
+            order.basePrice,
+            order.listingTime,
+            order.expirationTime,
+            order.paymentToken
+        );
+    }
+
+    /**
+     * Cancel sell order
      */
     function cancelOrder(Order memory order, Sig memory sig) external {
+        require(msg.sender == order.maker);
+        
         bytes32 hash = hashOrder(order);
         require(_validateOrder(hash, order, sig));
-        require(msg.sender == order.maker);
+
+        // transfer back NFT from escrow account to seller
+        ExchangeProxyImpl impl = proxyImplementation();
+        require(
+            impl.invoke(order.nftAddress, address(this), order.maker, order.tokenId)
+        );
+
         cancelledOrFinalized[hash] = true;
         emit CancelOrder(hash);
     }
 
     /**
-     * Accept order - seller accept the best bid price
+     * Cancel previous bid
+     */
+    function _cancelPrevBidOrder(Order memory order) private {
+        bytes32 hash = hashOrder(order);
+        cancelledOrFinalized[hash] = true;
+        emit CancelOrder(hash);
+    }
+
+    /**
+     * Cancel order by violation
+     */
+    function cancelOrdeByViolation(Order memory order) external onlyOwner {
+        // transfer back NFT from escrow account to seller
+        ExchangeProxyImpl impl = proxyImplementation();
+        require(
+            impl.invoke(order.nftAddress, address(this), order.maker, order.tokenId)
+        );
+        bytes32 hash = hashOrder(order);
+        cancelledOrFinalized[hash] = true;
+        emit CancelOrder(hash);
+    }
+
+    /**
+     * Accept order
+     * 1. Seller accept the best bid price
+     * 2. Buyer selects buy now
      */
     function acceptOrder(
         Order memory buy,
@@ -365,6 +422,7 @@ contract Exchange is ReentrancyGuard, Ownable {
     ) external payable nonReentrant {
         // validate buy order
         bytes32 buyHash = hashOrder(buy);
+        
         // when buyer selects buy now
         if (buy.taker == msg.sender) {
             require(_validateOrder(buyHash, buy, buySig), "invalid taker");
@@ -387,14 +445,14 @@ contract Exchange is ReentrancyGuard, Ownable {
         }
         require(size > 0);
 
-        ExchangeProxyImpl impl = proxyImplementation();
-
         // transfer funds
-        uint256 hammerPrice = _finalize(buy, sell);
+        uint256 closingPrice = _finalize(buy, sell);
+        require(closingPrice > 0);
 
-        // transfer NFT
+        // transfer NFT from escrow account to buyer
+        ExchangeProxyImpl impl = proxyImplementation();
         require(
-            impl.invoke(sell.nftAddress, sell.maker, buy.taker, sell.tokenId)
+            impl.invoke(sell.nftAddress, address(this), buy.taker, sell.tokenId)
         );
 
         // mark orders as finalized
@@ -406,7 +464,7 @@ contract Exchange is ReentrancyGuard, Ownable {
             sellHash,
             sell.maker,
             buy.taker,
-            hammerPrice,
+            closingPrice,
             sell.paymentToken
         );
     }
