@@ -3,7 +3,6 @@ pragma solidity ^0.8.11;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./ProxyRegistry.sol";
 import "./ExchangeProxyImpl.sol";
@@ -182,15 +181,8 @@ contract Exchange is ReentrancyGuard, Ownable {
             );
 
             if (sell.royaltyRecipient != address(0)) {
-                commission = SafeMath.div(
-                    SafeMath.mul(hammerPrice, _secondCommissionFee),
-                    BASIS_UNIT
-                );
-
-                uint256 royalty = SafeMath.div(
-                    SafeMath.mul(hammerPrice, _royalty),
-                    BASIS_UNIT
-                );
+                commission = (hammerPrice * _secondCommissionFee) / BASIS_UNIT;
+                uint256 royalty = (hammerPrice * _royalty) / BASIS_UNIT;
 
                 // NFT minter receives royalty fee
                 _transferToken(
@@ -208,10 +200,7 @@ contract Exchange is ReentrancyGuard, Ownable {
                     commission
                 );
             } else {
-                commission = SafeMath.div(
-                    SafeMath.mul(hammerPrice, _commissionFee),
-                    BASIS_UNIT
-                );
+                commission = (hammerPrice * _commissionFee) / BASIS_UNIT;
 
                 // exchange receives commission fee
                 _transferToken(
@@ -224,21 +213,11 @@ contract Exchange is ReentrancyGuard, Ownable {
         } else if (sell.paymentToken == address(0) && buy.taker == msg.sender) {
             require(msg.value >= hammerPrice);
             if (sell.royaltyRecipient != address(0)) {
-                commission = SafeMath.div(
-                    SafeMath.mul(hammerPrice, _secondCommissionFee),
-                    BASIS_UNIT
-                );
-
-                uint256 royalty = SafeMath.div(
-                    SafeMath.mul(hammerPrice, _royalty),
-                    BASIS_UNIT
-                );
+                commission = (hammerPrice * _secondCommissionFee) / BASIS_UNIT;
+                uint256 royalty = (hammerPrice * _royalty) / BASIS_UNIT;
 
                 // maker receives sales amount
-                uint256 receiveAmount = SafeMath.sub(
-                    SafeMath.sub(hammerPrice, commission),
-                    royalty
-                );
+                uint256 receiveAmount = hammerPrice - commission - royalty;
                 sell.maker.transfer(receiveAmount);
 
                 // NFT minter receives royalty fee
@@ -247,13 +226,10 @@ contract Exchange is ReentrancyGuard, Ownable {
                 // exchange receives commission fee
                 _commissionFeeRecipent.transfer(commission);
             } else {
-                commission = SafeMath.div(
-                    SafeMath.mul(hammerPrice, _commissionFee),
-                    BASIS_UNIT
-                );
+                commission = (hammerPrice * _commissionFee) / BASIS_UNIT;
 
                 // maker receives sales amount
-                uint256 receiveAmount = SafeMath.sub(hammerPrice, commission);
+                uint256 receiveAmount = hammerPrice - commission;
                 sell.maker.transfer(receiveAmount);
 
                 // exchange receives commission fee

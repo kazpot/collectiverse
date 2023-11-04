@@ -1,7 +1,7 @@
 import { run, ethers } from "hardhat";
 
 async function main() {
-  console.log("🟥 Start deploying to mainnet 🟥");
+  console.log("🟥 Start deploying to toposware 🟥");
   await run("compile");
 
   const [owner] = await ethers.getSigners();
