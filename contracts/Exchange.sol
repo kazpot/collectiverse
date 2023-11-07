@@ -98,6 +98,8 @@ contract Exchange is ReentrancyGuard, Ownable {
         address paymentToken
     );
 
+    event Received(address indexed sender, uint256 amount);
+
     function _validateOrder(
         bytes32 hash,
         Order memory order,
@@ -467,5 +469,22 @@ contract Exchange is ReentrancyGuard, Ownable {
             closingPrice,
             sell.paymentToken
         );
+    }
+
+    function onERC721Received(address, address, uint256, bytes calldata) external pure returns(bytes4) {
+        return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
+    }
+
+    function withdraw(uint256 amount) external nonReentrant onlyOwner {
+        require(amount <= payable(address(this)).balance);
+        payable(msg.sender).transfer(amount);
+    }
+
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
+    }
+
+    fallback() external payable {
+        emit Received(msg.sender, msg.value);
     }
 }
