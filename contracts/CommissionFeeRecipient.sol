@@ -6,9 +6,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract CommissionFeeRecipent is ReentrancyGuard, Ownable {
-    event ReceivedEther(address indexed sender, uint256 amount);
+    event ReceivedNative(address indexed sender, uint256 amount);
 
-    function totalEthBalance() public view returns (uint256) {
+    function totalNativeBalance() public view returns (uint256) {
         return payable(address(this)).balance;
     }
 
@@ -16,8 +16,8 @@ contract CommissionFeeRecipent is ReentrancyGuard, Ownable {
         return ERC20(token).balanceOf(address(this));
     }
 
-    function withdrawEth(uint256 amount) external nonReentrant onlyOwner {
-        require(amount <= totalEthBalance());
+    function withdrawNative(uint256 amount) external nonReentrant onlyOwner {
+        require(amount <= totalNativeBalance());
         payable(msg.sender).transfer(amount);
     }
 
@@ -31,10 +31,10 @@ contract CommissionFeeRecipent is ReentrancyGuard, Ownable {
     }
 
     receive() external payable {
-        emit ReceivedEther(msg.sender, msg.value);
+        emit ReceivedNative(msg.sender, msg.value);
     }
 
     fallback() external payable {
-        emit ReceivedEther(msg.sender, msg.value);
+        emit ReceivedNative(msg.sender, msg.value);
     }
 }
