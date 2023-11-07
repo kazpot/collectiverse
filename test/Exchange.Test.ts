@@ -19,7 +19,6 @@ import {
   emptySig,
 } from "./helper";
 import { BigNumber } from "ethereum-waffle/node_modules/ethers";
-import { executionAsyncId } from "async_hooks";
 
 const { deployContract } = waffle;
 
@@ -149,9 +148,9 @@ describe("Exchange", () => {
   it("Create token by seller", async () => {
     await expect(nft.connect(seller).createToken("http://example.com"))
       .to.emit(nft, "Transfer")
-      .withArgs(zeroAddress, seller.address, 1);
+      .withArgs(zeroAddress, seller.address, tokenIdOne);
     const sellerTokenBalance = await nft.balanceOf(seller.address);
-    expect(sellerTokenBalance).to.equal(1);
+    expect(sellerTokenBalance).to.equal(tokenIdOne);
   });
 
   it("Deposit Ether to Exchange", async () => {
@@ -202,213 +201,214 @@ describe("Exchange", () => {
         expirationTime,
         zeroAddress
       );
+
+    const sellHash = computeHashOrder(sell);
+    const sig = await seller.signMessage(ethers.utils.arrayify(sellHash));
+    const expanded = ethers.utils.splitSignature(sig);
+    let sellSig: SigStruct = {
+      v: expanded.v,
+      r: expanded.r,
+      s: expanded.s,
+    };
+
+    await exchange.connect(seller).cancelOrder(sell, sellSig);
   });
 
   it("Create buy order", async () => {
     // first bid
-    // const bidPrice1 = ethers.utils.parseUnits("3", "ether");
-    // let buy1: OrderStruct = {
-    //   exchange: exchange.address,
-    //   maker: zeroAddress,
-    //   taker: buyer1.address,
-    //   royaltyRecipient: zeroAddress,
-    //   side: Side.Buy,
-    //   nftAddress: nft.address,
-    //   tokenId: ethers.BigNumber.from(tokenIdOne),
-    //   basePrice: ethers.BigNumber.from(bidPrice1),
-    //   listingTime: ethers.BigNumber.from(listingTime),
-    //   expirationTime: ethers.BigNumber.from(expirationTime),
-    //   paymentToken: zeroAddress,
-    // };
-    // const hash1 = computeHashOrderWithPrefix(buy1);
-    // await expect(exchange.connect(buyer1).createOrder(buy1))
-    //   .to.emit(exchange, "OrderCreated")
-    //   .withArgs(
-    //     Side.Buy,
-    //     hash1,
-    //     zeroAddress,
-    //     buyer1.address,
-    //     zeroAddress,
-    //     nft.address,
-    //     ethers.BigNumber.from(tokenIdOne),
-    //     ethers.BigNumber.from(bidPrice1),
-    //     listingTime,
-    //     expirationTime,
-    //     zeroAddress
-    //   );
-    // await weth.connect(buyer1).approve(exchange.address, bidPrice1);
-    // const buyer1Allowance = await weth
-    //   .connect(buyer1)
-    //   .allowance(buyer1.address, exchange.address);
-    // expect(buyer1Allowance.toString()).to.equal("3000000000000000000");
-    //   // second bid
-    //   const bidPrice2 = ethers.utils.parseUnits("4", "ether");
-    //   let buy2: OrderStruct = {
-    //     exchange: exchange.address,
-    //     maker: zeroAddress,
-    //     taker: buyer2.address,
-    //     royaltyRecipient: zeroAddress,
-    //     side: Side.Buy,
-    //     nftAddress: nft.address,
-    //     tokenId: ethers.BigNumber.from(tokenId),
-    //     basePrice: ethers.BigNumber.from(bidPrice2),
-    //     listingTime: ethers.BigNumber.from(listingTime),
-    //     expirationTime: ethers.BigNumber.from(expirationTime),
-    //     paymentToken: weth.address,
-    //   };
-    //   const hash2 = computeHashOrderWithPrefix(buy2);
-    //   await expect(exchange.connect(buyer2).createOrder(buy2))
-    //     .to.emit(exchange, "OrderCreated")
-    //     .withArgs(
-    //       Side.Buy,
-    //       hash2,
-    //       zeroAddress,
-    //       buyer2.address,
-    //       zeroAddress,
-    //       nft.address,
-    //       ethers.BigNumber.from(tokenId),
-    //       ethers.BigNumber.from(bidPrice2),
-    //       listingTime,
-    //       expirationTime,
-    //       weth.address
-    //     );
-    //   await weth.connect(buyer2).approve(exchange.address, bidPrice2);
-    //   const buyer2Allowance = await weth
-    //     .connect(buyer2)
-    //     .allowance(buyer2.address, exchange.address);
-    //   expect(buyer2Allowance.toString()).to.equal("4000000000000000000");
+    const bidPrice1 = ethers.utils.parseUnits("3", "ether");
+    let buy1: OrderStruct = {
+      exchange: exchange.address,
+      maker: zeroAddress,
+      taker: buyer1.address,
+      royaltyRecipient: zeroAddress,
+      side: Side.Buy,
+      nftAddress: nft.address,
+      tokenId: ethers.BigNumber.from(tokenIdOne),
+      basePrice: ethers.BigNumber.from(bidPrice1),
+      listingTime: ethers.BigNumber.from(listingTime),
+      expirationTime: ethers.BigNumber.from(expirationTime),
+      paymentToken: zeroAddress,
+    };
+    const hash1 = computeHashOrderWithPrefix(buy1);
+
+    await expect(
+      exchange
+        .connect(buyer1)
+        .createFirstBidOrder(buy1, { value: ethers.BigNumber.from(bidPrice1) })
+    )
+      .to.emit(exchange, "OrderCreated")
+      .withArgs(
+        Side.Buy,
+        hash1,
+        zeroAddress,
+        buyer1.address,
+        zeroAddress,
+        nft.address,
+        ethers.BigNumber.from(tokenIdOne),
+        ethers.BigNumber.from(bidPrice1),
+        listingTime,
+        expirationTime,
+        zeroAddress
+      );
+
+    // second bid
+    const bidPrice2 = ethers.utils.parseUnits("4", "ether");
+    let buy2: OrderStruct = {
+      exchange: exchange.address,
+      maker: zeroAddress,
+      taker: buyer2.address,
+      royaltyRecipient: zeroAddress,
+      side: Side.Buy,
+      nftAddress: nft.address,
+      tokenId: ethers.BigNumber.from(tokenIdOne),
+      basePrice: ethers.BigNumber.from(bidPrice2),
+      listingTime: ethers.BigNumber.from(listingTime),
+      expirationTime: ethers.BigNumber.from(expirationTime),
+      paymentToken: zeroAddress,
+    };
+
+    const balance1 = await buyer1.getBalance();
+
+    const hash2 = computeHashOrderWithPrefix(buy2);
+    await expect(
+      exchange
+        .connect(buyer2)
+        .createBidOrder(buy2, buy1, { value: ethers.BigNumber.from(bidPrice2) })
+    )
+      .to.emit(exchange, "OrderCreated")
+      .withArgs(
+        Side.Buy,
+        hash2,
+        zeroAddress,
+        buyer2.address,
+        zeroAddress,
+        nft.address,
+        ethers.BigNumber.from(tokenIdOne),
+        ethers.BigNumber.from(bidPrice2),
+        listingTime,
+        expirationTime,
+        zeroAddress
+      );
+
+    const balance2 = await buyer1.getBalance();
+    expect(balance2.sub(balance1)).to.equal(bidPrice1);
   });
 
-  // it("Accept order", async () => {
-  //   let listingT = Math.floor(Date.now() / 1000);
+  it("Accept order", async () => {
+    let listingT = Math.floor(Date.now() / 1000);
 
-  //   // +3 minutes
-  //   let expirationT = listingT + 3 * 60;
+    // +3 minutes
+    let expirationT = listingT + 3 * 60;
 
-  //   const basePrice = ethers.utils.parseUnits("2", "ether");
-  //   const bidPrice = ethers.utils.parseUnits("4", "ether");
+    const basePrice = ethers.utils.parseUnits("2", "ether");
+    const bidPrice = ethers.utils.parseUnits("4", "ether");
 
-  //   let sell: OrderStruct = {
-  //     exchange: exchange.address,
-  //     maker: seller.address,
-  //     taker: zeroAddress,
-  //     royaltyRecipient: zeroAddress,
-  //     side: Side.Sell,
-  //     nftAddress: nft.address,
-  //     tokenId: ethers.BigNumber.from(tokenId),
-  //     basePrice: ethers.BigNumber.from(basePrice),
-  //     listingTime: ethers.BigNumber.from(listingT),
-  //     expirationTime: ethers.BigNumber.from(expirationT),
-  //     paymentToken: weth.address,
-  //   };
+    let sell: OrderStruct = {
+      exchange: exchange.address,
+      maker: seller.address,
+      taker: zeroAddress,
+      royaltyRecipient: zeroAddress,
+      side: Side.Sell,
+      nftAddress: nft.address,
+      tokenId: ethers.BigNumber.from(tokenIdOne),
+      basePrice: ethers.BigNumber.from(basePrice),
+      listingTime: ethers.BigNumber.from(listingT),
+      expirationTime: ethers.BigNumber.from(expirationT),
+      paymentToken: zeroAddress,
+    };
 
-  //   let buy: OrderStruct = {
-  //     exchange: exchange.address,
-  //     maker: zeroAddress,
-  //     taker: buyer1.address,
-  //     royaltyRecipient: zeroAddress,
-  //     side: Side.Buy,
-  //     nftAddress: nft.address,
-  //     tokenId: ethers.BigNumber.from(tokenId),
-  //     basePrice: ethers.BigNumber.from(bidPrice),
-  //     listingTime: ethers.BigNumber.from(listingT),
-  //     expirationTime: ethers.BigNumber.from(expirationT),
-  //     paymentToken: weth.address,
-  //   };
+    let buy: OrderStruct = {
+      exchange: exchange.address,
+      maker: zeroAddress,
+      taker: buyer1.address,
+      royaltyRecipient: zeroAddress,
+      side: Side.Buy,
+      nftAddress: nft.address,
+      tokenId: ethers.BigNumber.from(tokenIdOne),
+      basePrice: ethers.BigNumber.from(bidPrice),
+      listingTime: ethers.BigNumber.from(listingT),
+      expirationTime: ethers.BigNumber.from(expirationT),
+      paymentToken: zeroAddress,
+    };
 
-  //   await exchange.connect(seller).createOrder(sell);
-  //   await exchange.connect(buyer1).createOrder(buy);
+    // approve proxy implementation for transferting NFT from seller
+    const proxyImplAddress = await exchange.proxyImplementation();
+    await nft.connect(seller).approve(proxyImplAddress, tokenIdOne);
 
-  //   // sell sid signature
-  //   const sellHash = computeHashOrder(sell);
-  //   const sig = await seller.signMessage(ethers.utils.arrayify(sellHash));
-  //   const expanded = ethers.utils.splitSignature(sig);
-  //   let sellSig: SigStruct = {
-  //     v: expanded.v,
-  //     r: expanded.r,
-  //     s: expanded.s,
-  //   };
+    await exchange.connect(seller).createOrder(sell);
+    await exchange
+      .connect(buyer1)
+      .createFirstBidOrder(buy, { value: ethers.BigNumber.from(bidPrice) });
 
-  //   // verify signature
-  //   const recoverd = ethers.utils.verifyMessage(
-  //     ethers.utils.arrayify(sellHash),
-  //     sig
-  //   );
-  //   expect(recoverd).to.equal(seller.address);
+    // sell sid signature
+    const sellHash = computeHashOrder(sell);
+    const sig = await seller.signMessage(ethers.utils.arrayify(sellHash));
+    const expanded = ethers.utils.splitSignature(sig);
+    let sellSig: SigStruct = {
+      v: expanded.v,
+      r: expanded.r,
+      s: expanded.s,
+    };
 
-  //   // 15%
-  //   const commissionFeeRate = await exchange.commissionFee();
-  //   const commissionFeeRateBN: BigNumber =
-  //     ethers.BigNumber.from(commissionFeeRate);
+    // verify signature
+    const recoverd = ethers.utils.verifyMessage(
+      ethers.utils.arrayify(sellHash),
+      sig
+    );
+    expect(recoverd).to.equal(seller.address);
 
-  //   // 4 ETH
-  //   const buyPriceBN: BigNumber = ethers.BigNumber.from(bidPrice);
+    // 15%
+    const commissionFeeRate = await exchange.commissionFee();
+    const commissionFeeRateBN: BigNumber =
+      ethers.BigNumber.from(commissionFeeRate);
 
-  //   // 4 * 0.15 = 0.6 ETH
-  //   const commissionFee: BigNumber = buyPriceBN
-  //     .mul(commissionFeeRateBN)
-  //     .div(1000);
+    // 4 ETH
+    const buyPriceBN: BigNumber = ethers.BigNumber.from(bidPrice);
 
-  //   // approvals for token transfer
-  //   await weth.connect(buyer1).approve(exchange.address, bidPrice);
-  //   await weth.connect(seller).approve(exchange.address, commissionFee);
+    // 4 * 0.15 = 0.6 ETH
+    const commissionFee: BigNumber = buyPriceBN
+      .mul(commissionFeeRateBN)
+      .div(1000);
 
-  //   // approve proxy implementation for transferting NFT from seller
-  //   const proxyImplAddress = await exchange.proxyImplementation();
-  //   await nft.connect(seller).approve(proxyImplAddress, tokenId);
+    // seller accepts order
+    const sellHashPrefix = computeHashOrderWithPrefix(sell);
+    const buyHashPrefix = computeHashOrderWithPrefix(buy);
 
-  //   // seller accepts order
-  //   const sellHashPrefix = computeHashOrderWithPrefix(sell);
-  //   const buyHashPrefix = computeHashOrderWithPrefix(buy);
+    await expect(
+      exchange.connect(seller).acceptOrder(buy, emptySig, sell, sellSig)
+    )
+      .to.emit(exchange, "MatchedOrder")
+      .withArgs(
+        buyHashPrefix,
+        sellHashPrefix,
+        sell.maker,
+        buy.taker,
+        bidPrice,
+        zeroAddress
+      );
 
-  //   await expect(
-  //     exchange.connect(seller).acceptOrder(buy, emptySig, sell, sellSig)
-  //   )
-  //     .to.emit(exchange, "MatchedOrder")
-  //     .withArgs(
-  //       buyHashPrefix,
-  //       sellHashPrefix,
-  //       sell.maker,
-  //       buy.taker,
-  //       bidPrice,
-  //       sell.paymentToken
-  //     );
+    // platform receives 0.6ETH
+    const platformBalance = await commissionFeeRecipient
+      .connect(owner)
+      .totalNativeBalance();
+    expect(platformBalance).to.equal(commissionFee);
 
-  //   // platform receives 0.6ETH
-  //   const platformBalance = await commissionFeeRecipient.totalTokenBalance(
-  //     weth.address
-  //   );
-  //   expect(platformBalance).to.equal(commissionFee);
+    // sellet NFT balance after transaction
+    const sellerTokenBalance = await nft.balanceOf(seller.address);
+    expect(sellerTokenBalance).to.equal(0);
 
-  //   // seller balance = 100ETH + 4ETH - 0.6ETH = 103.4ETH
-  //   const sellerBalance = await weth.balanceOf(seller.address);
-  //   expect(sellerBalance).to.equal(
-  //     ethers.BigNumber.from("100000000000000000000")
-  //       .add(bidPrice)
-  //       .sub(commissionFee)
-  //   );
+    // buyer NFT balance after transaction
+    const buyer1TokenBalance = await nft.balanceOf(buyer1.address);
+    expect(buyer1TokenBalance).to.equal(1);
 
-  //   // buyer balance = 100ETH - 4ETH = 96ETH
-  //   const buyer1Balance = await weth.balanceOf(buyer1.address);
-  //   expect(buyer1Balance).to.equal(
-  //     ethers.BigNumber.from("100000000000000000000").sub(bidPrice)
-  //   );
+    // make sure if orders are finalized
+    const sellFinalized = await exchange.cancelledOrFinalized(sellHashPrefix);
+    expect(sellFinalized).to.equal(true);
 
-  //   // sellet NFT balance after transaction
-  //   const sellerTokenBalance = await nft.balanceOf(seller.address);
-  //   expect(sellerTokenBalance).to.equal(0);
-
-  //   // buyer NFT balance after transaction
-  //   const buyer1TokenBalance = await nft.balanceOf(buyer1.address);
-  //   expect(buyer1TokenBalance).to.equal(1);
-
-  //   // make sure if orders are finalized
-  //   const sellFinalized = await exchange.cancelledOrFinalized(sellHashPrefix);
-  //   expect(sellFinalized).to.equal(true);
-
-  //   const buyFinalized = await exchange.cancelledOrFinalized(buyHashPrefix);
-  //   expect(buyFinalized).to.equal(true);
-  // });
+    const buyFinalized = await exchange.cancelledOrFinalized(buyHashPrefix);
+    expect(buyFinalized).to.equal(true);
+  });
 
   it("Buy now", async () => {
     // seller mints NFT token
@@ -456,9 +456,10 @@ describe("Exchange", () => {
     await nft.connect(seller).approve(proxyImplAddress, tokenIdTwo);
 
     await exchange.connect(seller).createOrder(sell);
-    await exchange.connect(buyer2).creatBuyNowOrder(buy);
+    await exchange.connect(buyer2).createBuyNowOrder(buy);
 
-    const tokenIdTwoOwner = await nft.connect(seller).ownerOf(tokenIdTwo);
+    // ensure that now escrow account has nft
+    const tokenIdTwoOwner = await nft.connect(owner).ownerOf(tokenIdTwo);
     expect(tokenIdTwoOwner).to.equal(exchange.address);
 
     // buy side signature
@@ -510,9 +511,9 @@ describe("Exchange", () => {
         zeroAddress
       );
 
-    // platform receives 0.3 ETH
-    const platformBalance = await commissionFeeRecipient.totalEthBalance();
-    expect(platformBalance).to.equal(commissionFee);
+    // platform receives 0.6 + 0.3 = 0.9 ETH
+    const platformBalance = await commissionFeeRecipient.totalNativeBalance();
+    expect(platformBalance).to.equal(BigNumber.from("900000000000000000"));
 
     // sellet NFT balance after transaction
     const sellerResultBalance = await nft.balanceOf(seller.address);
@@ -523,271 +524,259 @@ describe("Exchange", () => {
     expect(buyer2TokenBalance).to.equal(1);
   });
 
-  // it("Accept order - Resell buyer1 -> buyer3", async () => {
-  //   // seller -> minter
-  //   // buyer1 -> seller
-  //   // buyer3 -> buyer
+  it("Accept order - Resell buyer1 -> buyer3", async () => {
+    // seller -> minter
+    // buyer1 -> seller
+    // buyer3 -> buyer
 
-  //   let listingT = Math.floor(Date.now() / 1000);
+    let listingT = Math.floor(Date.now() / 1000);
 
-  //   // +3 minutes
-  //   let expirationT = listingT + 3 * 60;
+    // +3 minutes
+    let expirationT = listingT + 3 * 60;
 
-  //   const basePrice = ethers.utils.parseUnits("2", "ether");
-  //   const bidPrice = ethers.utils.parseUnits("4", "ether");
+    const basePrice = ethers.utils.parseUnits("2", "ether");
+    const bidPrice = ethers.utils.parseUnits("4", "ether");
 
-  //   let sell: OrderStruct = {
-  //     exchange: exchange.address,
-  //     maker: buyer1.address,
-  //     taker: zeroAddress,
-  //     royaltyRecipient: seller.address,
-  //     side: Side.Sell,
-  //     nftAddress: nft.address,
-  //     tokenId: ethers.BigNumber.from(tokenId),
-  //     basePrice: ethers.BigNumber.from(basePrice),
-  //     listingTime: ethers.BigNumber.from(listingT),
-  //     expirationTime: ethers.BigNumber.from(expirationT),
-  //     paymentToken: weth.address,
-  //   };
+    let sell: OrderStruct = {
+      exchange: exchange.address,
+      maker: buyer1.address,
+      taker: zeroAddress,
+      royaltyRecipient: seller.address,
+      side: Side.Sell,
+      nftAddress: nft.address,
+      tokenId: ethers.BigNumber.from(tokenIdOne),
+      basePrice: ethers.BigNumber.from(basePrice),
+      listingTime: ethers.BigNumber.from(listingT),
+      expirationTime: ethers.BigNumber.from(expirationT),
+      paymentToken: zeroAddress,
+    };
 
-  //   let buy: OrderStruct = {
-  //     exchange: exchange.address,
-  //     maker: zeroAddress,
-  //     taker: buyer3.address,
-  //     royaltyRecipient: zeroAddress,
-  //     side: Side.Buy,
-  //     nftAddress: nft.address,
-  //     tokenId: ethers.BigNumber.from(tokenId),
-  //     basePrice: ethers.BigNumber.from(bidPrice),
-  //     listingTime: ethers.BigNumber.from(listingT),
-  //     expirationTime: ethers.BigNumber.from(expirationT),
-  //     paymentToken: weth.address,
-  //   };
+    let buy: OrderStruct = {
+      exchange: exchange.address,
+      maker: zeroAddress,
+      taker: buyer3.address,
+      royaltyRecipient: zeroAddress,
+      side: Side.Buy,
+      nftAddress: nft.address,
+      tokenId: ethers.BigNumber.from(tokenIdOne),
+      basePrice: ethers.BigNumber.from(bidPrice),
+      listingTime: ethers.BigNumber.from(listingT),
+      expirationTime: ethers.BigNumber.from(expirationT),
+      paymentToken: zeroAddress,
+    };
 
-  //   await exchange.connect(buyer1).createOrder(sell);
-  //   await exchange.connect(buyer3).createOrder(buy);
+    // approve proxy implementation for transferting NFT from seller
+    const proxyImplAddress = await exchange.proxyImplementation();
+    await nft.connect(buyer1).approve(proxyImplAddress, tokenIdOne);
 
-  //   // sell sid signature
-  //   const sellHash = computeHashOrder(sell);
-  //   const sig = await buyer1.signMessage(ethers.utils.arrayify(sellHash));
-  //   const expanded = ethers.utils.splitSignature(sig);
-  //   let sellSig: SigStruct = {
-  //     v: expanded.v,
-  //     r: expanded.r,
-  //     s: expanded.s,
-  //   };
+    await exchange.connect(buyer1).createOrder(sell);
+    await exchange.connect(buyer3).createBuyNowOrder(buy);
 
-  //   // verify signature
-  //   const recoverd = ethers.utils.verifyMessage(
-  //     ethers.utils.arrayify(sellHash),
-  //     sig
-  //   );
-  //   expect(recoverd).to.equal(buyer1.address);
+    // ensure that now escrow account has nft
+    const tokenIdOneOwner = await nft.connect(owner).ownerOf(tokenIdOne);
+    expect(tokenIdOneOwner).to.equal(exchange.address);
 
-  //   // 7%
-  //   const secondCommissionFeeRate = await exchange.secondCommissionFee();
-  //   const secondCommissionFeeRateBN: BigNumber = ethers.BigNumber.from(
-  //     secondCommissionFeeRate
-  //   );
+    // sell sid signature
+    const sellHash = computeHashOrder(sell);
+    const sig = await buyer1.signMessage(ethers.utils.arrayify(sellHash));
+    const expanded = ethers.utils.splitSignature(sig);
+    let sellSig: SigStruct = {
+      v: expanded.v,
+      r: expanded.r,
+      s: expanded.s,
+    };
 
-  //   // 10%
-  //   const royaltyFeeRate = await exchange.royaltyFee();
-  //   const royaltyFeeRateBN: BigNumber = ethers.BigNumber.from(royaltyFeeRate);
+    // verify signature
+    const recoverd = ethers.utils.verifyMessage(
+      ethers.utils.arrayify(sellHash),
+      sig
+    );
+    expect(recoverd).to.equal(buyer1.address);
 
-  //   // 4 ETH
-  //   const buyPriceBN: BigNumber = ethers.BigNumber.from(bidPrice);
+    // 7%
+    const secondCommissionFeeRate = await exchange.secondCommissionFee();
+    const secondCommissionFeeRateBN: BigNumber = ethers.BigNumber.from(
+      secondCommissionFeeRate
+    );
 
-  //   // 4 ETH * 0.07 = 0.28 ETH
-  //   const secondCommissionFee: BigNumber = buyPriceBN
-  //     .mul(secondCommissionFeeRateBN)
-  //     .div(1000);
+    // 10%
+    const royaltyFeeRate = await exchange.royaltyFee();
+    const royaltyFeeRateBN: BigNumber = ethers.BigNumber.from(royaltyFeeRate);
 
-  //   // 4 ETH * 0.1 = 0.4 ETH
-  //   const royaltyFee: BigNumber = buyPriceBN.mul(royaltyFeeRateBN).div(1000);
+    // 4 ETH
+    const buyPriceBN: BigNumber = ethers.BigNumber.from(bidPrice);
 
-  //   // approvals for token transfer
-  //   await weth.connect(buyer3).approve(exchange.address, bidPrice);
-  //   await weth
-  //     .connect(buyer1)
-  //     .approve(exchange.address, secondCommissionFee.add(royaltyFee));
+    // 4 ETH * 0.07 = 0.28 ETH
+    const secondCommissionFee: BigNumber = buyPriceBN
+      .mul(secondCommissionFeeRateBN)
+      .div(1000);
 
-  //   // approve proxy implementation for transferting NFT from seller
-  //   const proxyImplAddress = await exchange.proxyImplementation();
-  //   await nft.connect(buyer1).approve(proxyImplAddress, tokenId);
+    // 4 ETH * 0.1 = 0.4 ETH
+    const royaltyFee: BigNumber = buyPriceBN.mul(royaltyFeeRateBN).div(1000);
 
-  //   // seller accepts order
-  //   const sellHashPrefix = computeHashOrderWithPrefix(sell);
-  //   const buyHashPrefix = computeHashOrderWithPrefix(buy);
+    // seller accepts order
+    const sellHashPrefix = computeHashOrderWithPrefix(sell);
+    const buyHashPrefix = computeHashOrderWithPrefix(buy);
 
-  //   await expect(
-  //     exchange.connect(buyer1).acceptOrder(buy, emptySig, sell, sellSig)
-  //   )
-  //     .to.emit(exchange, "MatchedOrder")
-  //     .withArgs(
-  //       buyHashPrefix,
-  //       sellHashPrefix,
-  //       sell.maker,
-  //       buy.taker,
-  //       bidPrice,
-  //       sell.paymentToken
-  //     );
+    // exchange balance = 4.4 ETH
+    const balance = await exchange.connect(owner).totalNativeBalance();
+    // console.log(balance.toString());
 
-  //   // platform receives 0.6 ETH + 0.28 ETH = 0.88 ETH
-  //   const platformBalance = await commissionFeeRecipient.totalTokenBalance(
-  //     weth.address
-  //   );
-  //   expect(platformBalance.toString()).to.equal("880000000000000000");
+    await expect(
+      exchange.connect(buyer1).acceptOrder(buy, emptySig, sell, sellSig)
+    )
+      .to.emit(exchange, "MatchedOrder")
+      .withArgs(
+        buyHashPrefix,
+        sellHashPrefix,
+        sell.maker,
+        buy.taker,
+        bidPrice,
+        zeroAddress
+      );
 
-  //   // buyer1 balance = 96 ETH - (4 ETH - 0.68 ETH) = 99.32 ETH
-  //   const buyer1Balance = await weth.balanceOf(buyer1.address);
-  //   expect(buyer1Balance.toString()).to.equal("99320000000000000000");
+    // platform receives 0.6 ETH + 0.28 ETH = 0.88 ETH
+    const platformBalance = await commissionFeeRecipient.totalNativeBalance();
+    expect(platformBalance.toString()).to.equal("1180000000000000000");
 
-  //   // buyer balance = 100 ETH - 4 ETH = 96 ETH
-  //   const buyer3Balance = await weth.balanceOf(buyer3.address);
-  //   expect(buyer3Balance.toString()).to.equal("96000000000000000000");
+    // sellet NFT balance after transaction
+    const sellerTokenBalance = await nft.balanceOf(buyer1.address);
+    expect(sellerTokenBalance).to.equal(0);
 
-  //   // minter balance = 103.4 ETH + 0.4 ETH = 103.8 ETH
-  //   const minterBalance = await weth.balanceOf(seller.address);
-  //   expect(minterBalance.toString()).to.equal("103800000000000000000");
+    // buyer NFT balance after transaction
+    const buyer1TokenBalance = await nft.balanceOf(buyer3.address);
+    expect(buyer1TokenBalance).to.equal(1);
 
-  //   // sellet NFT balance after transaction
-  //   const sellerTokenBalance = await nft.balanceOf(buyer1.address);
-  //   expect(sellerTokenBalance).to.equal(0);
+    // make sure if orders are finalized
+    const sellFinalized = await exchange.cancelledOrFinalized(sellHashPrefix);
+    expect(sellFinalized).to.equal(true);
 
-  //   // buyer NFT balance after transaction
-  //   const buyer1TokenBalance = await nft.balanceOf(buyer3.address);
-  //   expect(buyer1TokenBalance).to.equal(1);
+    const buyFinalized = await exchange.cancelledOrFinalized(buyHashPrefix);
+    expect(buyFinalized).to.equal(true);
+  });
 
-  //   // make sure if orders are finalized
-  //   const sellFinalized = await exchange.cancelledOrFinalized(sellHashPrefix);
-  //   expect(sellFinalized).to.equal(true);
+  it("Buy now - Resell buyer2 -> buyer4", async () => {
+    // buyer2 has 1 NFT
+    const sellerTokenBalance = await nft.balanceOf(buyer2.address);
+    expect(sellerTokenBalance).to.equal(1);
 
-  //   const buyFinalized = await exchange.cancelledOrFinalized(buyHashPrefix);
-  //   expect(buyFinalized).to.equal(true);
-  // });
+    let listingT = Math.floor(Date.now() / 1000);
 
-  // it("Buy now - Resell buyer2 -> buyer4", async () => {
-  //   // buyer2 has 1 NFT
-  //   const sellerTokenBalance = await nft.balanceOf(buyer2.address);
-  //   expect(sellerTokenBalance).to.equal(1);
+    const basePrice = ethers.utils.parseUnits("2", "ether");
+    const buyPrice = ethers.utils.parseUnits("2", "ether");
 
-  //   let listingT = Math.floor(Date.now() / 1000);
+    let sell: OrderStruct = {
+      exchange: exchange.address,
+      maker: buyer2.address,
+      taker: zeroAddress,
+      royaltyRecipient: seller.address,
+      side: Side.Sell,
+      nftAddress: nft.address,
+      tokenId: ethers.BigNumber.from(tokenIdTwo),
+      basePrice: ethers.BigNumber.from(basePrice),
+      listingTime: ethers.BigNumber.from(listingT),
+      expirationTime: ethers.BigNumber.from(0),
+      paymentToken: zeroAddress,
+    };
 
-  //   const basePrice = ethers.utils.parseUnits("2", "ether");
-  //   const buyPrice = ethers.utils.parseUnits("2", "ether");
+    let buy: OrderStruct = {
+      exchange: exchange.address,
+      maker: zeroAddress,
+      taker: buyer4.address,
+      royaltyRecipient: seller.address,
+      side: Side.Buy,
+      nftAddress: nft.address,
+      tokenId: ethers.BigNumber.from(tokenIdTwo),
+      basePrice: ethers.BigNumber.from(buyPrice),
+      listingTime: ethers.BigNumber.from(listingT),
+      expirationTime: ethers.BigNumber.from(0),
+      paymentToken: zeroAddress,
+    };
 
-  //   let sell: OrderStruct = {
-  //     exchange: exchange.address,
-  //     maker: buyer2.address,
-  //     taker: zeroAddress,
-  //     royaltyRecipient: seller.address,
-  //     side: Side.Sell,
-  //     nftAddress: nft.address,
-  //     tokenId: ethers.BigNumber.from(tokenIdTwo),
-  //     basePrice: ethers.BigNumber.from(basePrice),
-  //     listingTime: ethers.BigNumber.from(listingT),
-  //     expirationTime: ethers.BigNumber.from(0),
-  //     paymentToken: zeroAddress,
-  //   };
+    // approve proxy implementation for transferting NFT from seller
+    const proxyImplAddress = await exchange.proxyImplementation();
+    await nft.connect(buyer2).approve(proxyImplAddress, tokenIdTwo);
 
-  //   let buy: OrderStruct = {
-  //     exchange: exchange.address,
-  //     maker: zeroAddress,
-  //     taker: buyer4.address,
-  //     royaltyRecipient: seller.address,
-  //     side: Side.Buy,
-  //     nftAddress: nft.address,
-  //     tokenId: ethers.BigNumber.from(tokenIdTwo),
-  //     basePrice: ethers.BigNumber.from(buyPrice),
-  //     listingTime: ethers.BigNumber.from(listingT),
-  //     expirationTime: ethers.BigNumber.from(0),
-  //     paymentToken: zeroAddress,
-  //   };
+    await exchange.connect(buyer2).createOrder(sell);
+    await exchange.connect(buyer4).createBuyNowOrder(buy);
 
-  //   await exchange.connect(buyer2).createOrder(sell);
-  //   await exchange.connect(buyer4).createOrder(buy);
+    // buy side signature
+    const buyHash = computeHashOrder(buy);
+    const sig = await buyer4.signMessage(ethers.utils.arrayify(buyHash));
+    const expanded = ethers.utils.splitSignature(sig);
+    let buySig: SigStruct = {
+      v: expanded.v,
+      r: expanded.r,
+      s: expanded.s,
+    };
 
-  //   // buy side signature
-  //   const buyHash = computeHashOrder(buy);
-  //   const sig = await buyer4.signMessage(ethers.utils.arrayify(buyHash));
-  //   const expanded = ethers.utils.splitSignature(sig);
-  //   let buySig: SigStruct = {
-  //     v: expanded.v,
-  //     r: expanded.r,
-  //     s: expanded.s,
-  //   };
+    // verify signature
+    const recoverd = ethers.utils.verifyMessage(
+      ethers.utils.arrayify(buyHash),
+      sig
+    );
+    expect(recoverd).to.equal(buyer4.address);
 
-  //   // verify signature
-  //   const recoverd = ethers.utils.verifyMessage(
-  //     ethers.utils.arrayify(buyHash),
-  //     sig
-  //   );
-  //   expect(recoverd).to.equal(buyer4.address);
+    // 7%
+    const secondCommissionFeeRate = await exchange.secondCommissionFee();
+    const secondCommissionFeeRateBN: BigNumber = ethers.BigNumber.from(
+      secondCommissionFeeRate
+    );
 
-  //   // 7%
-  //   const secondCommissionFeeRate = await exchange.secondCommissionFee();
-  //   const secondCommissionFeeRateBN: BigNumber = ethers.BigNumber.from(
-  //     secondCommissionFeeRate
-  //   );
+    // 10%
+    const royaltyFeeRate = await exchange.royaltyFee();
+    const royaltyFeeRateBN: BigNumber = ethers.BigNumber.from(royaltyFeeRate);
 
-  //   // 10%
-  //   const royaltyFeeRate = await exchange.royaltyFee();
-  //   const royaltyFeeRateBN: BigNumber = ethers.BigNumber.from(royaltyFeeRate);
+    // 2 ETH
+    const buyPriceBN: BigNumber = ethers.BigNumber.from(buyPrice);
 
-  //   // 2 ETH
-  //   const buyPriceBN: BigNumber = ethers.BigNumber.from(buyPrice);
+    // 2 ETH * 0.07 = 0.14 ETH
+    const secondCommissionFee: BigNumber = buyPriceBN
+      .mul(secondCommissionFeeRateBN)
+      .div(1000);
+    expect(secondCommissionFee.toString()).to.equal("140000000000000000");
 
-  //   // 2 ETH * 0.07 = 0.14 ETH
-  //   const secondCommissionFee: BigNumber = buyPriceBN
-  //     .mul(secondCommissionFeeRateBN)
-  //     .div(1000);
-  //   expect(secondCommissionFee.toString()).to.equal("140000000000000000");
+    // 2 ETH * 0.1 = 0.2 ETH
+    const royaltyFee: BigNumber = buyPriceBN.mul(royaltyFeeRateBN).div(1000);
 
-  //   // 2 ETH * 0.1 = 0.2 ETH
-  //   const royaltyFee: BigNumber = buyPriceBN.mul(royaltyFeeRateBN).div(1000);
+    // seller accepts order
+    const sellHashPrefix = computeHashOrderWithPrefix(sell);
+    const buyHashPrefix = computeHashOrderWithPrefix(buy);
 
-  //   // approve proxy implementation for transferting NFT from seller
-  //   const proxyImplAddress = await exchange.proxyImplementation();
-  //   await nft.connect(buyer2).approve(proxyImplAddress, tokenIdTwo);
+    // minter balance before transaction
+    const minterBalance1 = await seller.getBalance();
 
-  //   // seller accepts order
-  //   const sellHashPrefix = computeHashOrderWithPrefix(sell);
-  //   const buyHashPrefix = computeHashOrderWithPrefix(buy);
+    await expect(
+      exchange
+        .connect(buyer4)
+        .acceptOrder(buy, buySig, sell, emptySig, { value: buyPrice })
+    )
+      .to.emit(exchange, "MatchedOrder")
+      .withArgs(
+        buyHashPrefix,
+        sellHashPrefix,
+        sell.maker,
+        buy.taker,
+        buyPrice,
+        sell.paymentToken
+      );
 
-  //   // minter balance before transaction
-  //   const minterBalance1 = await seller.getBalance();
+    // platform receives 0.3 ETH + 0.14 ETH = 0.44 ETH
+    const platformBalance = await commissionFeeRecipient.totalNativeBalance();
+    expect(platformBalance.toString()).to.equal("1320000000000000000");
 
-  //   await expect(
-  //     exchange
-  //       .connect(buyer4)
-  //       .acceptOrder(buy, buySig, sell, emptySig, { value: buyPrice })
-  //   )
-  //     .to.emit(exchange, "MatchedOrder")
-  //     .withArgs(
-  //       buyHashPrefix,
-  //       sellHashPrefix,
-  //       sell.maker,
-  //       buy.taker,
-  //       buyPrice,
-  //       sell.paymentToken
-  //     );
+    // minter balance after transaction
+    const minterBalance2 = await seller.getBalance();
 
-  //   // platform receives 0.3 ETH + 0.14 ETH = 0.44 ETH
-  //   const platformBalance = await commissionFeeRecipient.totalEthBalance();
-  //   expect(platformBalance.toString()).to.equal("440000000000000000");
+    // minter receives royalty fee 0.2 ETH
+    expect(minterBalance2.sub(minterBalance1)).to.equal(royaltyFee);
 
-  //   // minter balance after transaction
-  //   const minterBalance2 = await seller.getBalance();
+    // sellet NFT balance after transaction
+    const sellerResultBalance = await nft.balanceOf(buyer2.address);
+    expect(sellerResultBalance).to.equal(0);
 
-  //   // minter receives royalty fee 0.2 ETH
-  //   expect(minterBalance2.sub(minterBalance1)).to.equal(royaltyFee);
-
-  //   // sellet NFT balance after transaction
-  //   const sellerResultBalance = await nft.balanceOf(buyer2.address);
-  //   expect(sellerResultBalance).to.equal(0);
-
-  //   // buyer NFT balance after transaction
-  //   const buyer4TokenBalance = await nft.balanceOf(buyer4.address);
-  //   expect(buyer4TokenBalance).to.equal(1);
-  // });
+    // buyer NFT balance after transaction
+    const buyer4TokenBalance = await nft.balanceOf(buyer4.address);
+    expect(buyer4TokenBalance).to.equal(1);
+  });
 });
