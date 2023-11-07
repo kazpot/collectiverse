@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import NFT from '../../artifacts/contracts/NFT.sol/NFT.json';
 import Exchange from '../../artifacts/contracts/Exchange.sol/Exchange.json';
-import WETH from '../../artifacts/contracts/MockWETH.sol/MockWETH.json';
+//import WETH from '../../artifacts/contracts/MockWETH.sol/MockWETH.json';
 import { BidOrder, NFTCollection, Order, Side, Sig, ListStatus } from '../common/types';
 import { emptySig, zeroAddress } from '../common/const';
 import { getCurrentUser, listId, signOrder } from '../common/util';
@@ -9,7 +9,7 @@ import axios from 'axios';
 
 const nftAddress = process.env.NEXT_PUBLIC_NFT_ADDRESS || '';
 const exchangeAddress = process.env.NEXT_PUBLIC_EXCHANGE_ADDRESS || '';
-const wethAddress = process.env.NEXT_PUBLIC_WETH_ADDRESS || '';
+//const wethAddress = process.env.NEXT_PUBLIC_WETH_ADDRESS || '';
 const apiServerUri = process.env.NEXT_PUBLIC_API_SERVER_URI || '';
 
 /**
@@ -122,7 +122,7 @@ export const list = async (
         basePrice: price,
         listingTime: ethers.BigNumber.from(listingTime),
         expirationTime: ethers.BigNumber.from(expirationTime),
-        paymentToken: wethAddress,
+        paymentToken: zeroAddress,
       };
     } else {
       sell = {
@@ -140,12 +140,14 @@ export const list = async (
       };
     }
 
+    // if user rejects approval, it throws exception
+    const t1 = await nft.approve(proxyImplAddress, item.tokenId);
+    tx = await t1.wait();
+    console.log(tx);
+
     const transaction = await exchange.createOrder(sell);
     tx = await transaction.wait();
     console.log(tx);
-
-    // if user rejects approval, it throws exception
-    await nft.approve(proxyImplAddress, item.tokenId);
 
     const hash = tx.events[0].args?.[1];
 
@@ -194,7 +196,7 @@ export const createBidOrder = async (item: NFTCollection, bidPrice: string): Pro
     const listingTime = Math.floor(Date.now() / 1000);
 
     const exchange = new ethers.Contract(exchangeAddress, Exchange.abi, signer);
-    const weth = new ethers.Contract(wethAddress, WETH.abi, signer);
+    // const weth = new ethers.Contract(wethAddress, WETH.abi, signer);
 
     const taker = await signer.getAddress();
 
@@ -209,18 +211,18 @@ export const createBidOrder = async (item: NFTCollection, bidPrice: string): Pro
       basePrice: price,
       listingTime: ethers.BigNumber.from(listingTime),
       expirationTime: ethers.BigNumber.from(item.expirationTime),
-      paymentToken: wethAddress,
+      paymentToken: zeroAddress,
     };
 
-    const t1 = await exchange.createOrder(buy);
-    const tx1 = await t1.wait();
-    console.log(tx1);
+    const t = await exchange.createOrder(buy, { value: price });
+    const tx = await t.wait();
+    console.log(tx);
 
-    const t2 = await weth.approve(exchange.address, price);
-    const tx2 = await t2.wait();
-    console.log(tx2);
+    // const t2 = await weth.approve(exchange.address, price);
+    // const tx2 = await t2.wait();
+    // console.log(tx2);
 
-    const hash = tx1.events[0].args?.[1];
+    const hash = tx.events[0].args?.[1];
 
     const sig = await signer.signMessage(hash);
 
@@ -233,7 +235,7 @@ export const createBidOrder = async (item: NFTCollection, bidPrice: string): Pro
         createTime: listingTime.toString(),
         active: true,
       },
-      tx: tx1.transactionHash,
+      tx: tx.transactionHash,
       sig,
     });
 
@@ -264,7 +266,7 @@ export const cancelOrder = async (item: NFTCollection): Promise<boolean> => {
       basePrice: price,
       listingTime: ethers.BigNumber.from(item.listingTime),
       expirationTime: ethers.BigNumber.from(item.expirationTime),
-      paymentToken: wethAddress,
+      paymentToken: zeroAddress,
     };
 
     const sig: Sig = await signOrder(sell);
@@ -380,7 +382,7 @@ export const acceptBidOrder = async (
       basePrice: floorPrice,
       listingTime: ethers.BigNumber.from(item.listingTime),
       expirationTime: ethers.BigNumber.from(item.expirationTime),
-      paymentToken: wethAddress,
+      paymentToken: zeroAddress,
     };
 
     const buy: Order = {
@@ -394,16 +396,16 @@ export const acceptBidOrder = async (
       basePrice: ethers.BigNumber.from(bestBidPrice),
       listingTime: ethers.BigNumber.from(bestBidOrder.createTime),
       expirationTime: ethers.BigNumber.from(item.expirationTime),
-      paymentToken: wethAddress,
+      paymentToken: zeroAddress,
     };
 
     const sig: Sig = await signOrder(sell);
     const exchange = new ethers.Contract(exchangeAddress, Exchange.abi, signer);
-    const weth = new ethers.Contract(wethAddress, WETH.abi, signer);
+    //const weth = new ethers.Contract(wethAddress, WETH.abi, signer);
 
-    const commissionFeeRate = await exchange.commissionFee();
-    const commissionFee = bestBidPrice.mul(commissionFeeRate).div(1000);
-    await weth.approve(exchange.address, ethers.BigNumber.from(commissionFee));
+    //const commissionFeeRate = await exchange.commissionFee();
+    //const commissionFee = bestBidPrice.mul(commissionFeeRate).div(1000);
+    //await weth.approve(exchange.address, ethers.BigNumber.from(commissionFee));
 
     const transaction = await exchange.acceptOrder(buy, emptySig, sell, sig);
     const tx = await transaction.wait();

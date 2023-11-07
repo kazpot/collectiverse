@@ -280,16 +280,41 @@ contract Exchange is ReentrancyGuard, Ownable {
      * Create sell order
      */
     function createOrder(Order memory order) external {
-        require(msg.sender == order.maker && order.taker == address(0));
+        require(msg.sender == order.maker && order.taker == address(0), "sender must be maker");
 
         bytes32 hash = hashOrder(order);
         require(!orders[hash]);
 
-        // NEW: transfer NFT to escrow account
+        // transfer NFT to escrow account
         ExchangeProxyImpl impl = proxyImplementation();
         require(
             impl.invoke(order.nftAddress, order.maker, address(this), order.tokenId)
         );
+
+        orders[hash] = true;
+        emit OrderCreated(
+            order.side,
+            hash,
+            order.maker,
+            order.taker,
+            order.royaltyRecipient,
+            order.nftAddress,
+            order.tokenId,
+            order.basePrice,
+            order.listingTime,
+            order.expirationTime,
+            order.paymentToken
+        );
+    }
+
+    /**
+     * Create buy now order
+     */
+    function creatBuyNowOrder(Order memory order) external {
+        require((msg.sender == order.taker && order.maker == address(0)), "sender must be taker");
+
+        bytes32 hash = hashOrder(order);
+        require(!orders[hash]);
 
         orders[hash] = true;
         emit OrderCreated(
@@ -381,7 +406,8 @@ contract Exchange is ReentrancyGuard, Ownable {
         // transfer back NFT from escrow account to seller
         ExchangeProxyImpl impl = proxyImplementation();
         require(
-            impl.invoke(order.nftAddress, address(this), order.maker, order.tokenId)
+            impl.invoke(order.nftAddress, address(this), order.maker, order.tokenId),
+            "Failed to escrow"
         );
 
         cancelledOrFinalized[hash] = true;
@@ -449,12 +475,18 @@ contract Exchange is ReentrancyGuard, Ownable {
 
         // transfer funds
         uint256 closingPrice = _finalize(buy, sell);
-        require(closingPrice > 0);
+
 
         // transfer NFT from escrow account to buyer
         ExchangeProxyImpl impl = proxyImplementation();
+
+        // approve exchange implementation contract
+        IERC721 nftContract = IERC721(sell.nftAddress);
+        nftContract.approve(address(impl), sell.tokenId);
+
         require(
-            impl.invoke(sell.nftAddress, address(this), buy.taker, sell.tokenId)
+            impl.invoke(sell.nftAddress, address(this), buy.taker, sell.tokenId),
+            "Failed to transfer to buyer"
         );
 
         // mark orders as finalized
