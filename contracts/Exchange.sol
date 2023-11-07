@@ -159,16 +159,23 @@ contract Exchange is ReentrancyGuard, Ownable {
 
         // auction
         if (sell.maker == msg.sender) {
-            sell.maker.transfer(closingPrice);
-
             if (sell.royaltyRecipient != address(0)) {
                 commission = (closingPrice * _secondCommissionFee) / BASIS_UNIT;
                 uint256 royalty = (closingPrice * _royalty) / BASIS_UNIT;
+
+                // maker receives sales amount
+                uint256 receiveAmount = closingPrice - commission - royalty;
+                sell.maker.transfer(receiveAmount);
 
                 sell.royaltyRecipient.transfer(royalty);
                 _commissionFeeRecipent.transfer(commission);
             } else {
                 commission = (closingPrice * _commissionFee) / BASIS_UNIT;
+
+                // maker receives sales amount
+                uint256 receiveAmount = closingPrice - commission;
+                sell.maker.transfer(receiveAmount);
+
                 _commissionFeeRecipent.transfer(commission);
             }
         // buy now 
@@ -184,6 +191,7 @@ contract Exchange is ReentrancyGuard, Ownable {
 
                 // NFT minter receives royalty fee
                 sell.royaltyRecipient.transfer(royalty);
+
                 // exchange receives commission fee
                 _commissionFeeRecipent.transfer(commission);
             } else {
@@ -192,6 +200,7 @@ contract Exchange is ReentrancyGuard, Ownable {
                 // maker receives sales amount
                 uint256 receiveAmount = closingPrice - commission;
                 sell.maker.transfer(receiveAmount);
+
                 // exchange receives commission fee
                 _commissionFeeRecipent.transfer(commission);
             }
@@ -288,7 +297,8 @@ contract Exchange is ReentrancyGuard, Ownable {
         // transfer NFT to escrow account
         ExchangeProxyImpl impl = proxyImplementation();
         require(
-            impl.invoke(order.nftAddress, order.maker, address(this), order.tokenId)
+            impl.invoke(order.nftAddress, order.maker, address(this), order.tokenId),
+            "Failed to escrow"
         );
 
         orders[hash] = true;
@@ -310,7 +320,7 @@ contract Exchange is ReentrancyGuard, Ownable {
     /**
      * Create buy now order
      */
-    function creatBuyNowOrder(Order memory order) external {
+    function createBuyNowOrder(Order memory order) external {
         require((msg.sender == order.taker && order.maker == address(0)), "sender must be taker");
 
         bytes32 hash = hashOrder(order);
@@ -336,7 +346,7 @@ contract Exchange is ReentrancyGuard, Ownable {
      * Create bid order
      */
     function createBidOrder(Order memory order, Order memory prevOrder) external payable {
-        require(msg.sender == order.taker && order.maker == address(0));
+        require(msg.sender == order.taker && order.maker == address(0), "sender must be taker");
 
         // New bid must be greater than prev bid
         require(order.basePrice > prevOrder.basePrice);
@@ -405,9 +415,14 @@ contract Exchange is ReentrancyGuard, Ownable {
 
         // transfer back NFT from escrow account to seller
         ExchangeProxyImpl impl = proxyImplementation();
+
+        // approve exchange implementation contract
+        IERC721 nftContract = IERC721(order.nftAddress);
+        nftContract.approve(address(impl), order.tokenId);
+
         require(
             impl.invoke(order.nftAddress, address(this), order.maker, order.tokenId),
-            "Failed to escrow"
+            "Failed to transfer back from escrow"
         );
 
         cancelledOrFinalized[hash] = true;
@@ -505,6 +520,11 @@ contract Exchange is ReentrancyGuard, Ownable {
 
     function onERC721Received(address, address, uint256, bytes calldata) external pure returns(bytes4) {
         return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
+    }
+
+
+    function totalNativeBalance() public view returns (uint256) {
+        return payable(address(this)).balance;
     }
 
     function withdraw(uint256 amount) external nonReentrant onlyOwner {
