@@ -42,7 +42,7 @@ describe("Exchange", () => {
   const tokenIdOne = 1;
   const tokenIdTwo = 2;
 
-  // GMT: 2022年1月10日 Monday 09:48:24
+  // GMT: 2022/1/10 Monday 09:48:24
   const listingTime = 1641808104;
 
   // +3 minutes
@@ -293,6 +293,10 @@ describe("Exchange", () => {
 
     const balance2 = await buyer1.getBalance();
     expect(balance2.sub(balance1)).to.equal(bidPrice1);
+
+    // 1 ETH (deposit) + 4 ETH (bid price) = 5 ETH
+    const exchangeBalance = await exchange.connect(owner).totalNativeBalance();
+    expect(exchangeBalance).to.eq(ethers.utils.parseUnits("5", "ether"));
   });
 
   it("Accept order", async () => {
@@ -341,6 +345,10 @@ describe("Exchange", () => {
       .connect(buyer1)
       .createFirstBidOrder(buy, { value: ethers.BigNumber.from(bidPrice) });
 
+    // exchange balance 5 ETH + 4 ETH = 9 ETH
+    const exchangeBalance = await exchange.connect(owner).totalNativeBalance();
+    expect(exchangeBalance).to.eq(ethers.utils.parseUnits("9", "ether"));
+
     // sell sid signature
     const sellHash = computeHashOrder(sell);
     const sig = await seller.signMessage(ethers.utils.arrayify(sellHash));
@@ -388,7 +396,7 @@ describe("Exchange", () => {
         zeroAddress
       );
 
-    // platform receives 0.6ETH
+    // platform receives 0.6 ETH
     const platformBalance = await commissionFeeRecipient
       .connect(owner)
       .totalNativeBalance();
@@ -408,6 +416,10 @@ describe("Exchange", () => {
 
     const buyFinalized = await exchange.cancelledOrFinalized(buyHashPrefix);
     expect(buyFinalized).to.equal(true);
+
+    // exchange balance 9 ETH - 4 ETH = 5 ETH
+    const exchangeBalance2 = await exchange.connect(owner).totalNativeBalance();
+    expect(exchangeBalance2).to.eq(ethers.utils.parseUnits("5", "ether"));
   });
 
   it("Buy now", async () => {
@@ -522,6 +534,10 @@ describe("Exchange", () => {
     // buyer NFT balance after transaction
     const buyer2TokenBalance = await nft.balanceOf(buyer2.address);
     expect(buyer2TokenBalance).to.equal(1);
+
+    // exchange balance 5 ETH
+    const exchangeBalance = await exchange.connect(owner).totalNativeBalance();
+    expect(exchangeBalance).to.eq(ethers.utils.parseUnits("5", "ether"));
   });
 
   it("Accept order - Resell buyer1 -> buyer3", async () => {
@@ -570,7 +586,13 @@ describe("Exchange", () => {
     await nft.connect(buyer1).approve(proxyImplAddress, tokenIdOne);
 
     await exchange.connect(buyer1).createOrder(sell);
-    await exchange.connect(buyer3).createBuyNowOrder(buy);
+    await exchange
+      .connect(buyer3)
+      .createFirstBidOrder(buy, { value: bidPrice });
+
+    // exchange balance 5 ETH + 4 ETH
+    const exchangeBalance = await exchange.connect(owner).totalNativeBalance();
+    expect(exchangeBalance).to.eq(ethers.utils.parseUnits("9", "ether"));
 
     // ensure that now escrow account has nft
     const tokenIdOneOwner = await nft.connect(owner).ownerOf(tokenIdOne);
@@ -618,10 +640,6 @@ describe("Exchange", () => {
     const sellHashPrefix = computeHashOrderWithPrefix(sell);
     const buyHashPrefix = computeHashOrderWithPrefix(buy);
 
-    // exchange balance = 4.4 ETH
-    const balance = await exchange.connect(owner).totalNativeBalance();
-    // console.log(balance.toString());
-
     await expect(
       exchange.connect(buyer1).acceptOrder(buy, emptySig, sell, sellSig)
     )
@@ -653,6 +671,10 @@ describe("Exchange", () => {
 
     const buyFinalized = await exchange.cancelledOrFinalized(buyHashPrefix);
     expect(buyFinalized).to.equal(true);
+
+    // exchange balance 9 ETH - 4 ETH = 5 ETH
+    const exchangeBalance2 = await exchange.connect(owner).totalNativeBalance();
+    expect(exchangeBalance2).to.eq(ethers.utils.parseUnits("5", "ether"));
   });
 
   it("Buy now - Resell buyer2 -> buyer4", async () => {
@@ -778,5 +800,9 @@ describe("Exchange", () => {
     // buyer NFT balance after transaction
     const buyer4TokenBalance = await nft.balanceOf(buyer4.address);
     expect(buyer4TokenBalance).to.equal(1);
+
+    // exchange balance 5 ETH
+    const exchangeBalance = await exchange.connect(owner).totalNativeBalance();
+    expect(exchangeBalance).to.eq(ethers.utils.parseUnits("5", "ether"));
   });
 });
