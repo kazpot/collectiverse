@@ -5,12 +5,10 @@ import ExchangeAbi from "../artifacts/contracts/Exchange.sol/Exchange.json";
 import ProxyRegistryabi from "../artifacts/contracts/ProxyRegistry.sol/ProxyRegistry.json";
 import CommissionFeeRecipientAbi from "../artifacts/contracts/CommissionFeeRecipient.sol/CommissionFeeRecipent.json";
 import NFTAbi from "../artifacts/contracts/NFT.sol/NFT.json";
-import MockWETHAbi from "../artifacts/contracts/MockWETH.sol/MockWETH.json";
 import { Exchange } from "../types/Exchange";
 import { ProxyRegistry } from "../types/ProxyRegistry";
 import { CommissionFeeRecipent } from "../types/CommissionFeeRecipent";
 import { NFT } from "../types/NFT";
-import { MockWETH } from "../types/MockWETH";
 import { OrderStruct, SigStruct } from "../types/Exchange";
 import {
   computeHashOrder,
@@ -34,7 +32,6 @@ describe("Exchange", () => {
   let proxyRegistry: ProxyRegistry;
   let commissionFeeRecipient: CommissionFeeRecipent;
   let nft: NFT;
-  let weth: MockWETH;
 
   const zeroAddress = "0x0000000000000000000000000000000000000000";
 
@@ -74,7 +71,6 @@ describe("Exchange", () => {
     await exchange.setNewProxyRegistry(proxyRegistry.address);
 
     nft = (await deployContract(owner, NFTAbi)) as NFT;
-    weth = (await deployContract(owner, MockWETHAbi)) as MockWETH;
   });
 
   it("Should set the right owner", async () => {
