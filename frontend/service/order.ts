@@ -96,7 +96,6 @@ export const list = async (
   listedItem: NFTCollection | null;
   reason?: string;
 }> => {
-  let tx: any;
   try {
     const signer = await getCurrentUser();
     const price = ethers.utils.parseUnits(item.price.toString(), 'ether');
@@ -142,15 +141,14 @@ export const list = async (
 
     // if user rejects approval, it throws exception
     const t1 = await nft.approve(proxyImplAddress, item.tokenId);
-    tx = await t1.wait();
-    console.log(tx);
+    const tx1 = await t1.wait();
+    console.log(tx1);
 
-    const transaction = await exchange.createOrder(sell);
-    tx = await transaction.wait();
-    console.log(tx);
+    const t2 = await exchange.createOrder(sell);
+    const tx2 = await t2.wait();
+    console.log(tx2);
 
-    const hash = tx.events[0].args?.[1];
-
+    const hash = tx2.events[2]?.args?.[1];
     const sig = await signer.signMessage(hash);
 
     const res = await axios.post(`${apiServerUri}/api/list`, {
@@ -173,10 +171,10 @@ export const list = async (
         tags: item.tags,
         mimeType: item.mimeType,
       },
-      tx: tx.transactionHash,
+      tx: tx2.transactionHash,
       sig,
     });
-    return { result: true, listTxHash: tx.transactionHash, listedItem: res.data };
+    return { result: true, listTxHash: tx2.transactionHash, listedItem: res.data };
   } catch (error) {
     console.error(error);
     return { result: false, listTxHash: null, listedItem: null, reason: 'exception' };
