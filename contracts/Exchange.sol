@@ -318,31 +318,6 @@ contract Exchange is ReentrancyGuard, Ownable {
     }
 
     /**
-     * Create buy now order
-     */
-    function createBuyNowOrder(Order memory order) external {
-        require((msg.sender == order.taker && order.maker == address(0)), "sender must be taker");
-
-        bytes32 hash = hashOrder(order);
-        require(!orders[hash]);
-
-        orders[hash] = true;
-        emit OrderCreated(
-            order.side,
-            hash,
-            order.maker,
-            order.taker,
-            order.royaltyRecipient,
-            order.nftAddress,
-            order.tokenId,
-            order.basePrice,
-            order.listingTime,
-            order.expirationTime,
-            order.paymentToken
-        );
-    }
-
-    /**
      * Create bid order
      */
     function createBidOrder(Order memory order, Order memory prevOrder) external payable {

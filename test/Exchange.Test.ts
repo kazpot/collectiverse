@@ -464,7 +464,6 @@ describe("Exchange", () => {
     await nft.connect(seller).approve(proxyImplAddress, tokenIdTwo);
 
     await exchange.connect(seller).createOrder(sell);
-    await exchange.connect(buyer2).createBuyNowOrder(buy);
 
     // ensure that now escrow account has nft
     const tokenIdTwoOwner = await nft.connect(owner).ownerOf(tokenIdTwo);
@@ -716,7 +715,6 @@ describe("Exchange", () => {
     await nft.connect(buyer2).approve(proxyImplAddress, tokenIdTwo);
 
     await exchange.connect(buyer2).createOrder(sell);
-    await exchange.connect(buyer4).createBuyNowOrder(buy);
 
     // buy side signature
     const buyHash = computeHashOrder(buy);
