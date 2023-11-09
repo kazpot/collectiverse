@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { closeModal } from '../../actions/modal.actions';
 import { NFTCollection } from '../../common/types';
-import { createBidOrder } from '../../service/order';
+import { createFirstBidOrder } from '../../service/order';
 
 type Props = {
   item: NFTCollection;
@@ -47,7 +47,7 @@ export default function BidForm({ item, bestBid }: Props) {
       alert('Price must not be empty');
       return;
     }
-    const res = await createBidOrder(item, newPrice.toString());
+    const res = await createFirstBidOrder(item, newPrice.toString());
     if (res) {
       enqueueSnackbar('Successfull bid!', { variant: 'success' });
       router.push(`/products/${item.nftAddress}:${item.tokenId}`);

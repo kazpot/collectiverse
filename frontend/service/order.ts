@@ -180,11 +180,14 @@ export const list = async (
 };
 
 /**
- * Place bid
+ * Place first bid
  * @param item
  * @param bidPrice
  */
-export const createBidOrder = async (item: NFTCollection, bidPrice: string): Promise<boolean> => {
+export const createFirstBidOrder = async (
+  item: NFTCollection,
+  bidPrice: string,
+): Promise<boolean> => {
   const signer = await getCurrentUser();
 
   try {
@@ -192,10 +195,8 @@ export const createBidOrder = async (item: NFTCollection, bidPrice: string): Pro
     const listingTime = Math.floor(Date.now() / 1000);
 
     const exchange = new ethers.Contract(exchangeAddress, Exchange.abi, signer);
-    // const weth = new ethers.Contract(wethAddress, WETH.abi, signer);
 
     const taker = await signer.getAddress();
-
     const buy: Order = {
       exchange: exchangeAddress,
       maker: zeroAddress,
@@ -210,16 +211,87 @@ export const createBidOrder = async (item: NFTCollection, bidPrice: string): Pro
       paymentToken: zeroAddress,
     };
 
-    const t = await exchange.createOrder(buy, { value: price });
+    const t = await exchange.createFirstBidOrder(buy, { value: price });
     const tx = await t.wait();
     console.log(tx);
 
-    // const t2 = await weth.approve(exchange.address, price);
-    // const tx2 = await t2.wait();
-    // console.log(tx2);
+    const hash = tx.events[0].args?.[1];
+    const sig = await signer.signMessage(hash);
+
+    await axios.post(`${apiServerUri}/api/bid`, {
+      order: {
+        parentId: item.listId,
+        hash,
+        price: bidPrice,
+        taker,
+        createTime: listingTime.toString(),
+        active: true,
+      },
+      tx: tx.transactionHash,
+      sig,
+    });
+
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+};
+
+/**
+ * Place subsequent bid
+ * @param item
+ * @param prevItem
+ * @param bidPrice
+ */
+export const createBidOrder = async (
+  item: NFTCollection,
+  prevItem: NFTCollection,
+  bidPrice: string,
+): Promise<boolean> => {
+  const signer = await getCurrentUser();
+
+  try {
+    const price = ethers.utils.parseUnits(bidPrice, 'ether');
+    const listingTime = Math.floor(Date.now() / 1000);
+
+    const exchange = new ethers.Contract(exchangeAddress, Exchange.abi, signer);
+
+    const taker = await signer.getAddress();
+    const buy: Order = {
+      exchange: exchangeAddress,
+      maker: zeroAddress,
+      taker,
+      royaltyRecipient: item.minter != item.maker ? item.minter : zeroAddress,
+      side: ethers.BigNumber.from(Side.Buy),
+      nftAddress: item.nftAddress,
+      tokenId: ethers.BigNumber.from(item.tokenId),
+      basePrice: price,
+      listingTime: ethers.BigNumber.from(listingTime),
+      expirationTime: ethers.BigNumber.from(item.expirationTime),
+      paymentToken: zeroAddress,
+    };
+
+    // FIXME: correct prevBuy properties
+    const prevBuy: Order = {
+      exchange: exchangeAddress,
+      maker: zeroAddress,
+      taker,
+      royaltyRecipient: prevItem.minter != prevItem.maker ? prevItem.minter : zeroAddress,
+      side: ethers.BigNumber.from(Side.Buy),
+      nftAddress: prevItem.nftAddress,
+      tokenId: ethers.BigNumber.from(prevItem.tokenId),
+      basePrice: price,
+      listingTime: ethers.BigNumber.from(listingTime),
+      expirationTime: ethers.BigNumber.from(prevItem.expirationTime),
+      paymentToken: zeroAddress,
+    };
+
+    const t = await exchange.createBidOrder(buy, prevBuy, { value: price });
+    const tx = await t.wait();
+    console.log(tx);
 
     const hash = tx.events[0].args?.[1];
-
     const sig = await signer.signMessage(hash);
 
     await axios.post(`${apiServerUri}/api/bid`, {
