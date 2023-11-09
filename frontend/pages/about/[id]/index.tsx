@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Box, Grid, Tab, Tabs, Typography } from '@mui/material';
 import Layout from '../../../components/Layout';
 import OwnAssets from '../../../components/OwnAssets';
+import UserDashboard from '../../../components/UserDashboard';
+import CollectionBoard from '../../../components/CollectionBoard';
 import Profile from '../../../components/Profile';
 import Category from '../../../models/Category';
 import Tag from '../../../models/Tag';
@@ -9,7 +11,6 @@ import db from '../../../utils/db';
 import { GetServerSideProps } from 'next';
 import { splitIntoChunks } from '../../../common/util';
 import PropTypes from 'prop-types';
-import UserDashboard from '../../../components/UserDashboard';
 import { getUserProfile } from '../../../service/user';
 import {
   UserProfile,
@@ -20,7 +21,6 @@ import {
 } from '../../../common/types';
 import Image from 'next/image';
 import classes from '../../../utils/classes';
-import CollectionBoard from '../../../components/CollectionBoard';
 import Collection from '../../../models/Collection';
 import Nft from '../../../models/Nft';
 import { getUserItemsByTokenIds } from '../../../service/item';
@@ -105,7 +105,7 @@ const Assets = ({
         ) : (
           <div
             style={{
-              backgroundImage: `url(${userProfile.profileImage})`,
+              backgroundImage: `url(${userProfile.profileImage ? userProfile.profileImage : ''})`,
               filter: 'blur(8px)',
               height: '350px',
               marginTop: '10px',

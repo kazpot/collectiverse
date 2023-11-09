@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 import NFT from '../../artifacts/contracts/NFT.sol/NFT.json';
 import Exchange from '../../artifacts/contracts/Exchange.sol/Exchange.json';
-//import WETH from '../../artifacts/contracts/MockWETH.sol/MockWETH.json';
 import { BidOrder, NFTCollection, Order, Side, Sig, ListStatus } from '../common/types';
 import { emptySig, zeroAddress } from '../common/const';
 import { getCurrentUser, listId, signOrder } from '../common/util';
@@ -9,7 +8,6 @@ import axios from 'axios';
 
 const nftAddress = process.env.NEXT_PUBLIC_NFT_ADDRESS || '';
 const exchangeAddress = process.env.NEXT_PUBLIC_EXCHANGE_ADDRESS || '';
-//const wethAddress = process.env.NEXT_PUBLIC_WETH_ADDRESS || '';
 const apiServerUri = process.env.NEXT_PUBLIC_API_SERVER_URI || '';
 
 /**
@@ -399,11 +397,6 @@ export const acceptBidOrder = async (
 
     const sig: Sig = await signOrder(sell);
     const exchange = new ethers.Contract(exchangeAddress, Exchange.abi, signer);
-    //const weth = new ethers.Contract(wethAddress, WETH.abi, signer);
-
-    //const commissionFeeRate = await exchange.commissionFee();
-    //const commissionFee = bestBidPrice.mul(commissionFeeRate).div(1000);
-    //await weth.approve(exchange.address, ethers.BigNumber.from(commissionFee));
 
     const transaction = await exchange.acceptOrder(buy, emptySig, sell, sig);
     const tx = await transaction.wait();
