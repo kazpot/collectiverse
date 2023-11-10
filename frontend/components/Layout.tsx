@@ -26,6 +26,7 @@ import { getCurrentUser, shortAddress } from '../common/util';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import classes from '../utils/classes';
 import { chains } from '../common/const';
+import Image from 'next/image';
 
 type Props = {
   title?: string;
@@ -128,9 +129,15 @@ export default function Layout({ title, description, children }: Props) {
         <AppBar position='static' elevation={0} sx={classes.navbar}>
           <Toolbar sx={classes.toolbar}>
             <NextLink href='/' passHref>
-              <Link style={{ textDecoration: 'none' }}>
+              {/* <Link style={{ textDecoration: 'none' }}>
                 <Typography sx={classes.brand}>CollectiVerse</Typography>
-              </Link>
+              </Link> */}
+              <Image
+                src='/assets/logo_400x72.png'
+                width={400}
+                height={72}
+                alt='Picture of the author'
+              />
             </NextLink>
             <Box
               sx={{
