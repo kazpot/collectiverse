@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Button, Grid, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Button, Grid, Tab, Tabs, Typography, TextField } from '@mui/material';
 import Layout from '../../../components/Layout';
 import OwnAssets from '../../../components/OwnAssets';
 import UserDashboard from '../../../components/UserDashboard';
@@ -81,13 +81,33 @@ const Assets = ({
   const { enqueueSnackbar } = useSnackbar();
 
   const [tab, setTab] = useState(0);
+  const [itemProperty, setItemProperty] = useState({} as any);
 
   const handleTabChange = (e: any, newValue: number) => {
     setTab(newValue);
   };
 
+  const handleChange = (e: any) => {
+    setItemProperty((prevProp: any) => {
+      return {
+        ...prevProp,
+        [e.target.name]: e.target.value,
+      };
+    });
+  };
+
   const updateHandler = async () => {
-    const res = await updateOwnedItems(userProfile.address, null);
+    let nftAddress = null;
+    if (itemProperty.nftAddress) {
+      try {
+        nftAddress = ethers.utils.getAddress(itemProperty.nftAddress);
+      } catch (error) {
+        enqueueSnackbar('NFT address is invalid!', { variant: 'error' });
+        return;
+      }
+    }
+
+    const res = await updateOwnedItems(userProfile.address, nftAddress);
     if (res) {
       enqueueSnackbar('Successfully updated!', { variant: 'success' });
       window.location.reload();
@@ -161,6 +181,23 @@ const Assets = ({
               >
                 Update
               </Button>
+              <TextField
+                label='Optional'
+                name='nftAddress'
+                type='string'
+                value={itemProperty.nftAddress}
+                placeholder='NFT address to be imported (42 characters starting with 0x)'
+                //variant='filled'
+                inputProps={{
+                  maxLength: 42,
+                  style: {
+                    fontSize: 12,
+                    width: 600,
+                  },
+                }}
+                onChange={handleChange}
+                //{...(errors['nftAddress'] && { error: true, helperText: errors['nftAddress'] })}
+              />
               <OwnAssets
                 userProfile={userProfile}
                 tagOptions={tagOptions}
