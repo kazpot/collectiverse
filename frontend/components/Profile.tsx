@@ -10,7 +10,6 @@ import {
   Typography,
 } from '@mui/material';
 import { AvatarGroup } from '@mui/material';
-import { shortAddressOnly } from '../common/util';
 import { RootState } from '../store/configureStore';
 import { useSelector } from 'react-redux';
 import { useRouter } from 'next/router';
@@ -188,15 +187,20 @@ export default function Profile({ userProfile }: Props) {
           )}
         </ListItem>
         <ListItem>
-          <Button sx={classes.mt1} variant='outlined'>
-            {shortAddressOnly(userProfile.address)}
-          </Button>
-        </ListItem>
-        <ListItem>
-          {currentUserAddress === userProfile.address && (
+          {currentUserAddress.toLowerCase() === userProfile.address.toLowerCase() && (
             <Button
               style={{ margin: '5px' }}
-              sx={classes.mt1}
+              sx={{
+                backgroundColor: 'white',
+                color: 'black',
+                width: '100px',
+                fontSize: '15px',
+                margin: '8px',
+                borderColor: 'black',
+                '&:hover': {
+                  background: '#fcfcfc',
+                },
+              }}
               variant='outlined'
               onClick={editProfileHandler}
             >
@@ -206,7 +210,17 @@ export default function Profile({ userProfile }: Props) {
           {currentUserAddress !== userProfile.address && !alreadyFollowed && (
             <Button
               style={{ margin: '5px' }}
-              sx={classes.mt1}
+              sx={{
+                backgroundColor: 'white',
+                color: 'black',
+                width: '100px',
+                fontSize: '15px',
+                margin: '8px',
+                borderColor: 'black',
+                '&:hover': {
+                  background: '#fcfcfc',
+                },
+              }}
               variant='outlined'
               onClick={followHandler}
             >
@@ -216,7 +230,17 @@ export default function Profile({ userProfile }: Props) {
           {currentUserAddress !== userProfile.address && alreadyFollowed && (
             <Button
               style={{ margin: '5px' }}
-              sx={classes.mt1}
+              sx={{
+                backgroundColor: 'white',
+                color: 'black',
+                width: '100px',
+                fontSize: '15px',
+                margin: '8px',
+                borderColor: 'black',
+                '&:hover': {
+                  background: '#fcfcfc',
+                },
+              }}
               variant='outlined'
               onClick={unfollowHandler}
             >

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Grid, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Button, Grid, Tab, Tabs, Typography } from '@mui/material';
 import Layout from '../../../components/Layout';
 import OwnAssets from '../../../components/OwnAssets';
 import UserDashboard from '../../../components/UserDashboard';
@@ -23,9 +23,10 @@ import Image from 'next/image';
 import classes from '../../../utils/classes';
 import Collection from '../../../models/Collection';
 import Nft from '../../../models/Nft';
-import { getUserItemsByTokenIds } from '../../../service/item';
+import { getUserItemsByTokenIds, updateOwnedItems } from '../../../service/item';
 import List from '../../../models/List';
 import { ethers } from 'ethers';
+import { useSnackbar } from 'notistack';
 
 function TabPanel(props: any) {
   const { children, value, index, ...other } = props;
@@ -77,10 +78,22 @@ const Assets = ({
   userItems,
   listingItems,
 }: Props) => {
+  const { enqueueSnackbar } = useSnackbar();
+
   const [tab, setTab] = useState(0);
 
   const handleTabChange = (e: any, newValue: number) => {
     setTab(newValue);
+  };
+
+  const updateHandler = async () => {
+    const res = await updateOwnedItems(userProfile.address, null);
+    if (res) {
+      enqueueSnackbar('Successfully updated!', { variant: 'success' });
+      window.location.reload();
+    } else {
+      enqueueSnackbar('Failed to update!', { variant: 'error' });
+    }
   };
 
   if (userProfile == null) {
@@ -131,6 +144,23 @@ const Assets = ({
               </Tabs>
             </Box>
             <TabPanel value={tab} index={0}>
+              <Button
+                onClick={updateHandler}
+                variant='outlined'
+                sx={{
+                  backgroundColor: 'white',
+                  color: 'black',
+                  width: '100px',
+                  fontSize: '15px',
+                  margin: '8px',
+                  borderColor: 'black',
+                  '&:hover': {
+                    background: '#fcfcfc',
+                  },
+                }}
+              >
+                Update
+              </Button>
               <OwnAssets
                 userProfile={userProfile}
                 tagOptions={tagOptions}

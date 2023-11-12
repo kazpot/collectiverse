@@ -4,6 +4,7 @@ import Exchange from '../../artifacts/contracts/Exchange.sol/Exchange.json';
 import axios from 'axios';
 import { zeroAddress } from '../common/const';
 import { BidOrder, Side, UserItem, NFTCollection, ListStatus } from '../common/types';
+import { getCurrentUser } from '../common/util';
 
 const nftAddress = process.env.NEXT_PUBLIC_NFT_ADDRESS || '';
 const exchangeAddress = process.env.NEXT_PUBLIC_EXCHANGE_ADDRESS || '';
@@ -225,4 +226,80 @@ export const getBidOrders = async (sellItem: NFTCollection): Promise<BidOrder[]>
     }),
   );
   return bidOrders;
+};
+
+/**
+ * Update owned nft items
+ * @param userAddress
+ * @param nftAddress
+ * @returns
+ */
+export const updateOwnedItems = async (
+  holderAddress: string,
+  holderNftAddress: string | null | undefined,
+): Promise<Boolean> => {
+  try {
+    const nftAddr = holderNftAddress ? holderNftAddress : nftAddress;
+    const nft = new ethers.Contract(nftAddr, NFT.abi, provider);
+
+    // event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+    const receivedFilter = nft.filters.Transfer(null, holderAddress, null);
+    const sentFilter = nft.filters.Transfer(holderAddress, null, null);
+
+    const receivedEvents = await nft.queryFilter(receivedFilter);
+    const sentEvents = await nft.queryFilter(sentFilter);
+
+    const events = sentEvents
+      .concat(receivedEvents)
+      .sort((a, b) => a.blockNumber - b.blockNumber || a.transactionIndex - b.transactionIndex);
+    // console.log(events);
+
+    const owned = new Set<number>();
+
+    for (const event of events) {
+      if (event.args) {
+        const { from, to, tokenId } = event.args;
+
+        if (to === holderAddress) {
+          owned.add(Number(tokenId));
+        } else if (from === holderAddress) {
+          owned.delete(Number(tokenId));
+        }
+      }
+    }
+
+    let userItems = [];
+    for (const tokenId of owned.values()) {
+      const tokenUri = await nft.tokenURI(tokenId);
+      const item = await axios.get(tokenUri);
+
+      const req = await fetch(item.data.image, { method: 'HEAD' });
+      const mimeType = req.headers.get('content-type') || '';
+
+      userItems.push({
+        tokenId,
+        image: item.data.image,
+        name: item.data.name,
+        description: item.data.description,
+        mimeType,
+        tokenUri,
+      });
+    }
+    console.log(userItems);
+
+    const signer = await getCurrentUser();
+    const currentUserAddress = await signer.getAddress();
+    const sig = await signer.signMessage(currentUserAddress);
+    const res = await axios.post(`${apiServerUri}/api/nfts`, {
+      userItems,
+      owner: holderAddress,
+      nftAddress: nftAddr,
+      sig,
+    });
+    console.log(res);
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+  return true;
 };

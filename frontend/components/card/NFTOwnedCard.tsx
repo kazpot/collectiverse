@@ -31,7 +31,7 @@ export default function NFTOwnedCard({
           </Typography>
         </CardContent>
         <CardContent>
-          {currentUserAddress === userItem.maker && (
+          {currentUserAddress.toLowerCase() === userItem.maker.toLowerCase() && (
             <Button
               disabled={listed}
               onClick={() => openListModal(userItem)}

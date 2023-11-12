@@ -6,7 +6,9 @@ const nftSchema = new mongoose.Schema(
     tokenId: { type: Number, required: true },
     owner: { type: String, required: true, index: true },
     tokenUri: { type: String, required: true },
-    item: { type: String, required: true },
+    name: { type: String, required: true },
+    description: { type: String, required: true },
+    image: { type: String, required: true },
     mimeType: { type: String, required: true },
   },
   {

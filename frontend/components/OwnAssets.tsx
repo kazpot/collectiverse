@@ -21,7 +21,6 @@ export default function OwnAssets({ tagOptions, categoryOptions, collections, us
   const currentUserAddress = useSelector((state: RootState) => state.currentUser);
   const { isOpen } = useSelector((state: RootState) => state.modal);
 
-  //const [userItems, setUserItems] = useState<UserItem[]>([]);
   const [userItem, setUserItem] = useState<UserItem>();
 
   const openListModal = (item: any) => {

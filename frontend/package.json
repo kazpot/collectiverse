@@ -41,7 +41,8 @@
     "redux": "^4.1.2",
     "redux-devtools-extension": "^2.13.9",
     "rgt": "^1.0.7",
-    "web3modal": "^1.9.4"
+    "web3modal": "^1.9.4",
+    "alchemy-sdk": "^2.10.1"
   },
   "devDependencies": {
     "@types/cookie": "^0.4.1",

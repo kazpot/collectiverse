@@ -6,7 +6,7 @@ import {
   Toolbar,
   Typography,
   Link,
-  Switch,
+  //  Switch,
   InputBase,
   IconButton,
   Menu,
@@ -16,14 +16,14 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import NextLink from 'next/link';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { RootState } from '../store/configureStore';
-import { darkModeOff, darkModeOn } from '../actions/dark.actions';
+//import { darkModeOff, darkModeOn } from '../actions/dark.actions';
 import { useEffect, useState } from 'react';
 import { signUp, isUser } from '../service/user';
 import { useRouter } from 'next/router';
 import { getCurrentUser, shortAddress } from '../common/util';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
+//import DarkModeIcon from '@mui/icons-material/DarkMode';
 import classes from '../utils/classes';
 import { chains } from '../common/const';
 import Image from 'next/image';
@@ -35,7 +35,7 @@ type Props = {
 };
 
 export default function Layout({ title, description, children }: Props) {
-  const dispatch = useDispatch();
+  //const dispatch = useDispatch();
   const router = useRouter();
 
   const darkMode: boolean = useSelector((state: RootState) => state.darkMode);
@@ -87,9 +87,9 @@ export default function Layout({ title, description, children }: Props) {
     router.push(`/search?query=${query}`);
   };
 
-  const darkModeChangeHandler = () => {
-    darkMode ? dispatch(darkModeOff()) : dispatch(darkModeOn());
-  };
+  // const darkModeChangeHandler = () => {
+  //   darkMode ? dispatch(darkModeOff()) : dispatch(darkModeOn());
+  // };
 
   const userClickHandler = (e: any) => {
     setAnchorEl(e.currentTarget);
@@ -189,10 +189,10 @@ export default function Layout({ title, description, children }: Props) {
               >
                 {signed && <MenuItem onClick={aboutHandler}>View Profile</MenuItem>}
                 {signed && <MenuItem onClick={collectionHandler}>Create Collection</MenuItem>}
-                <MenuItem>
+                {/* <MenuItem>
                   Dark Mode <DarkModeIcon style={{ verticalAlign: 'middle' }} />
                   <Switch checked={darkMode} onChange={darkModeChangeHandler}></Switch>
-                </MenuItem>
+                </MenuItem> */}
               </Menu>
               {!signed && (
                 <Button
