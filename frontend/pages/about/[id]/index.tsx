@@ -187,16 +187,14 @@ const Assets = ({
                 type='string'
                 value={itemProperty.nftAddress}
                 placeholder='NFT address to be imported (42 characters starting with 0x)'
-                //variant='filled'
                 inputProps={{
                   maxLength: 42,
                   style: {
-                    fontSize: 12,
+                    fontSize: '12px',
                     width: 600,
                   },
                 }}
                 onChange={handleChange}
-                //{...(errors['nftAddress'] && { error: true, helperText: errors['nftAddress'] })}
               />
               <OwnAssets
                 userProfile={userProfile}

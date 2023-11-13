@@ -30,7 +30,7 @@ export default function OwnAssets({ tagOptions, categoryOptions, collections, us
 
   return (
     <div>
-      <Grid container spacing={3}>
+      <Grid container spacing={3} sx={{ marginTop: '20px' }}>
         {userItems &&
           userItems.map((userItem) => (
             <Grid item md={4} key={userItem.tokenUri}>
