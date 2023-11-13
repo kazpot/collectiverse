@@ -259,7 +259,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query }: { query:
         items &&
         items.some((item) => {
           return (
-            userItem.nftAddress === item.nftAddress &&
+            userItem.nftAddress.toLowerCase() === item.nftAddress.toLowerCase() &&
             userItem.tokenId.toString() === item.tokenId.toString() &&
             item.status === ListStatus.Listing
           );

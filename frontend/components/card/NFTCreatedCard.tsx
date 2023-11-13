@@ -102,7 +102,7 @@ export default function NFTCreatedCard({
           </Stack>
         </CardContent>
         <CardContent sx={{ justifyContent: 'center', display: 'flex' }}>
-          {currentUserAddress === item.maker && (
+          {currentUserAddress.toLowerCase() === item.maker.toLowerCase() && (
             <Button
               disabled={parseInt(item.expirationTime) * 1000 > Date.now() || item.bestPrice == ''}
               onClick={() => cancel(item)}
@@ -122,25 +122,26 @@ export default function NFTCreatedCard({
               Cancel
             </Button>
           )}
-          {item.auction.toString() == 'true' && currentUserAddress === item.maker && (
-            <Button
-              disabled={parseInt(item.expirationTime) * 1000 > Date.now() || item.bestPrice == ''}
-              onClick={() => accept(item)}
-              variant='outlined'
-              sx={{
-                backgroundColor: '#AB892F',
-                color: 'white',
-                width: '180px',
-                fontSize: '20px',
-                margin: '8px',
-                '&:hover': {
-                  background: '#bf9934',
-                },
-              }}
-            >
-              Accept
-            </Button>
-          )}
+          {item.auction.toString() == 'true' &&
+            currentUserAddress.toLowerCase() === item.maker.toLowerCase() && (
+              <Button
+                disabled={parseInt(item.expirationTime) * 1000 > Date.now() || item.bestPrice == ''}
+                onClick={() => accept(item)}
+                variant='outlined'
+                sx={{
+                  backgroundColor: '#AB892F',
+                  color: 'white',
+                  width: '180px',
+                  fontSize: '20px',
+                  margin: '8px',
+                  '&:hover': {
+                    background: '#bf9934',
+                  },
+                }}
+              >
+                Accept
+              </Button>
+            )}
         </CardContent>
       </Card>
     </div>

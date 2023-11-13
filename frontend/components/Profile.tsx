@@ -207,46 +207,48 @@ export default function Profile({ userProfile }: Props) {
               Edit
             </Button>
           )}
-          {currentUserAddress !== userProfile.address && !alreadyFollowed && (
-            <Button
-              style={{ margin: '5px' }}
-              sx={{
-                backgroundColor: 'white',
-                color: 'black',
-                width: '100px',
-                fontSize: '15px',
-                margin: '8px',
-                borderColor: 'black',
-                '&:hover': {
-                  background: '#fcfcfc',
-                },
-              }}
-              variant='outlined'
-              onClick={followHandler}
-            >
-              Follow
-            </Button>
-          )}
-          {currentUserAddress !== userProfile.address && alreadyFollowed && (
-            <Button
-              style={{ margin: '5px' }}
-              sx={{
-                backgroundColor: 'white',
-                color: 'black',
-                width: '100px',
-                fontSize: '15px',
-                margin: '8px',
-                borderColor: 'black',
-                '&:hover': {
-                  background: '#fcfcfc',
-                },
-              }}
-              variant='outlined'
-              onClick={unfollowHandler}
-            >
-              Unfollow
-            </Button>
-          )}
+          {currentUserAddress.toLowerCase() !== userProfile.address.toLowerCase() &&
+            !alreadyFollowed && (
+              <Button
+                style={{ margin: '5px' }}
+                sx={{
+                  backgroundColor: 'white',
+                  color: 'black',
+                  width: '100px',
+                  fontSize: '15px',
+                  margin: '8px',
+                  borderColor: 'black',
+                  '&:hover': {
+                    background: '#fcfcfc',
+                  },
+                }}
+                variant='outlined'
+                onClick={followHandler}
+              >
+                Follow
+              </Button>
+            )}
+          {currentUserAddress.toLowerCase() !== userProfile.address.toLowerCase() &&
+            alreadyFollowed && (
+              <Button
+                style={{ margin: '5px' }}
+                sx={{
+                  backgroundColor: 'white',
+                  color: 'black',
+                  width: '100px',
+                  fontSize: '15px',
+                  margin: '8px',
+                  borderColor: 'black',
+                  '&:hover': {
+                    background: '#fcfcfc',
+                  },
+                }}
+                variant='outlined'
+                onClick={unfollowHandler}
+              >
+                Unfollow
+              </Button>
+            )}
         </ListItem>
         <ListItem>
           <ListItemText>{following.length} following</ListItemText>
