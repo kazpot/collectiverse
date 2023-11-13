@@ -157,7 +157,7 @@ export const list = async (
         maker: sell.maker,
         listingTime: listingTime.toString(),
         mintTime: item.mintTime.toString(),
-        expirationTime: item.expirationTime,
+        expirationTime: sell.expirationTime.toString(),
         image: item.image,
         ipfs: item.ipfs,
         price: item.price,
@@ -344,7 +344,7 @@ export const cancelOrder = async (item: NFTCollection): Promise<boolean> => {
     console.log(tx);
 
     // delist item
-    const cancelHash = tx.events[0].args?.[0];
+    const cancelHash = tx.events[3].args?.[0];
     const userSig = await signer.signMessage(cancelHash);
     const id = listId(item.listingTime, item.maker);
     await axios.post(`${apiServerUri}/api/list/cancel/${id}`, {

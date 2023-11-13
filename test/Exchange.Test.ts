@@ -207,7 +207,9 @@ describe("Exchange", () => {
       s: expanded.s,
     };
 
-    await exchange.connect(seller).cancelOrder(sell, sellSig);
+    await expect(exchange.connect(seller).cancelOrder(sell, sellSig))
+      .to.emit(exchange, "CancelOrder")
+      .withArgs(hash);
   });
 
   it("Create buy order", async () => {
