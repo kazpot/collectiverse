@@ -346,7 +346,7 @@ const ItemView = ({ item, bidOrders, bestBid, minter, maker, collection }: Props
         <ModalDialog
           isOpen={isOpen}
           item={item}
-          bestBid={bestBid ? bestBid.price.toString() : item.price.toString()}
+          bestBid={bestBid ? bestBid.price.toString() : '0'}
           type={ModalType.Price}
         />
       </Container>

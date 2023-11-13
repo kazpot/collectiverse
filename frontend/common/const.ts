@@ -26,42 +26,42 @@ export const chains: {
   1: {
     chainName: 'ETHEREUM',
     nativeSymbol: 'ETH',
-    auctionSymbol: 'WETH',
+    auctionSymbol: 'ETH',
   },
   // Goerli
   5: {
     chainName: 'GOERLI',
     nativeSymbol: 'ETH',
-    auctionSymbol: 'WETH',
+    auctionSymbol: 'ETH',
   },
   // Polygon
   137: {
     chainName: 'POLYGON',
     nativeSymbol: 'MATIC',
-    auctionSymbol: 'WMATIC',
+    auctionSymbol: 'MATIC',
   },
   // Mumbai
   80001: {
     chainName: 'MUMBAI',
     nativeSymbol: 'MATIC',
-    auctionSymbol: 'WMATIC',
+    auctionSymbol: 'MATIC',
   },
   // Topos
   2359: {
     chainName: 'TOPOS',
     nativeSymbol: 'TOPOS',
-    auctionSymbol: 'WTOPOS',
+    auctionSymbol: 'TOPOS',
   },
   // Private chain
   1337: {
     chainName: 'LOCAL',
     nativeSymbol: 'ETH',
-    auctionSymbol: 'WETH',
+    auctionSymbol: 'ETH',
   },
   // Arbitrum
   42161: {
     chainName: 'ARBITRUM',
     nativeSymbol: 'ETH',
-    auctionSymbol: 'WETH',
+    auctionSymbol: 'ETH',
   },
 };

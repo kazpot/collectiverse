@@ -215,7 +215,7 @@ export const createFirstBidOrder = async (
     const tx = await t.wait();
     console.log(tx);
 
-    const hash = tx.events[0].args?.[1];
+    const hash = tx.events[1].args?.[1];
     const sig = await signer.signMessage(hash);
 
     await axios.post(`${apiServerUri}/api/bid`, {
@@ -241,18 +241,19 @@ export const createFirstBidOrder = async (
 /**
  * Place subsequent bid
  * @param item
- * @param prevItem
  * @param bidPrice
+ * @param prevBidPrice
  */
 export const createBidOrder = async (
   item: NFTCollection,
-  prevItem: NFTCollection,
   bidPrice: string,
+  prevBidPrice: string,
 ): Promise<boolean> => {
   const signer = await getCurrentUser();
 
   try {
     const price = ethers.utils.parseUnits(bidPrice, 'ether');
+    const prevPrice = ethers.utils.parseUnits(prevBidPrice, 'ether');
     const listingTime = Math.floor(Date.now() / 1000);
 
     const exchange = new ethers.Contract(exchangeAddress, Exchange.abi, signer);
@@ -277,13 +278,13 @@ export const createBidOrder = async (
       exchange: exchangeAddress,
       maker: zeroAddress,
       taker,
-      royaltyRecipient: prevItem.minter != prevItem.maker ? prevItem.minter : zeroAddress,
+      royaltyRecipient: item.minter != item.maker ? item.minter : zeroAddress,
       side: ethers.BigNumber.from(Side.Buy),
-      nftAddress: prevItem.nftAddress,
-      tokenId: ethers.BigNumber.from(prevItem.tokenId),
-      basePrice: price,
+      nftAddress: item.nftAddress,
+      tokenId: ethers.BigNumber.from(item.tokenId),
+      basePrice: prevPrice,
       listingTime: ethers.BigNumber.from(listingTime),
-      expirationTime: ethers.BigNumber.from(prevItem.expirationTime),
+      expirationTime: ethers.BigNumber.from(item.expirationTime),
       paymentToken: zeroAddress,
     };
 
@@ -291,7 +292,7 @@ export const createBidOrder = async (
     const tx = await t.wait();
     console.log(tx);
 
-    const hash = tx.events[0].args?.[1];
+    const hash = tx.events[3].args?.[1];
     const sig = await signer.signMessage(hash);
 
     await axios.post(`${apiServerUri}/api/bid`, {
