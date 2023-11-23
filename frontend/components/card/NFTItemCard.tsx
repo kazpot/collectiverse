@@ -74,6 +74,12 @@ export default function NFTItemCard({ item }: Props) {
                 </span>
               </Typography>
             )}
+
+            <Typography style={{ color: 'white' }}>
+              <span style={{ color: 'grey' }}>Status</span>
+              <br />
+              <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{item.status}</span>
+            </Typography>
           </Stack>
         </CardContent>
       </Card>

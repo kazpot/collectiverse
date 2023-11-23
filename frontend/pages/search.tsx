@@ -44,10 +44,12 @@ interface Prop {
   categories: string[];
   tags: string[];
   items: NFTCollection[];
+  activeItems: NFTCollection[];
   colls: CollectionProfile[];
   users: UserProfile[];
   listPage: number;
   listCount: number;
+  activeListCount: number;
   listPages: number;
   collectionPage: number;
   collectionCount: number;
@@ -100,10 +102,12 @@ const Search = (props: Prop) => {
     categories,
     tags,
     items,
+    activeItems,
     colls,
     users,
     listPage,
     listCount,
+    activeListCount,
     listPages,
     collectionPage,
     collectionCount,
@@ -261,7 +265,10 @@ const Search = (props: Prop) => {
             <Grid item md={9}>
               <Grid container justifyContent='space-between' alignItems='center'>
                 <Grid item>
-                  {items.length === 0 ? 'No' : listCount} Results
+                  {items.length === 0 || !currentUserAddress ? '' : `${listCount} Results`}
+                  {activeItems.length !== 0 && !currentUserAddress
+                    ? `${activeListCount} Results`
+                    : ''}
                   {query !== 'all' && query !== '' && ' : ' + query}
                   {category !== 'all' && ' : ' + category}
                   {tag !== 'all' && ' : ' + tag}
@@ -291,7 +298,15 @@ const Search = (props: Prop) => {
               </Grid>
               <Grid sx={classes.mt1} container spacing={3}>
                 {items.length > 0 &&
+                  currentUserAddress &&
                   items.map((item: any) => (
+                    <Grid item md={4} key={item.listingTime}>
+                      <NFTItemCard item={item} />
+                    </Grid>
+                  ))}
+                {activeItems.length > 0 &&
+                  !currentUserAddress &&
+                  activeItems.map((item: any) => (
                     <Grid item md={4} key={item.listingTime}>
                       <NFTItemCard item={item} />
                     </Grid>
@@ -443,6 +458,18 @@ export const getServerSideProps = async ({ query }: { query: any }) => {
     ...categoryFilter,
     ...priceFilter,
     ...tagFilter,
+  })
+    .sort(order)
+    .skip(pageSize * (listPage - 1))
+    .limit(pageSize)
+    .lean();
+
+  // only active lists
+  const activeListDocs = await ListModel.find({
+    ...queryFilter,
+    ...categoryFilter,
+    ...priceFilter,
+    ...tagFilter,
     status: ListStatus.Listing,
   })
     .sort(order)
@@ -451,6 +478,12 @@ export const getServerSideProps = async ({ query }: { query: any }) => {
     .lean();
 
   let items = listDocs.map(db.convertDocToObj);
+  items.forEach(
+    (item: { id: string; nftAddress: any; tokenId: any }) =>
+      (item.id = `${item.nftAddress}:${item.tokenId}`),
+  );
+
+  let activeItems = activeListDocs.map(db.convertDocToObj);
   items.forEach(
     (item: { id: string; nftAddress: any; tokenId: any }) =>
       (item.id = `${item.nftAddress}:${item.tokenId}`),
@@ -478,6 +511,14 @@ export const getServerSideProps = async ({ query }: { query: any }) => {
     ...categoryFilter,
     ...priceFilter,
     ...tagFilter,
+  });
+
+  // number of active list
+  const activeListCount = await ListModel.countDocuments({
+    ...queryFilter,
+    ...categoryFilter,
+    ...priceFilter,
+    ...tagFilter,
     status: ListStatus.Listing,
   });
 
@@ -496,9 +537,11 @@ export const getServerSideProps = async ({ query }: { query: any }) => {
       categories,
       tags,
       items,
+      activeItems,
       colls,
       users,
       listCount,
+      activeListCount,
       listPage,
       listPages: Math.ceil(listCount / pageSize),
       collectionPage,
