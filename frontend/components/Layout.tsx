@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import { ethers } from 'ethers';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import {
@@ -53,7 +54,7 @@ export default function Layout({ title, description, children }: Props) {
         return;
       }
 
-      const res = await isUser(currentUserAddress);
+      const res = await isUser(ethers.utils.getAddress(currentUserAddress));
       if (res) {
         setSigned(res);
       }
