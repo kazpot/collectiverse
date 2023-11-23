@@ -120,7 +120,7 @@ const Assets = ({
     }
   };
 
-  if (userProfile == null) {
+  if (userProfile == null || !currentUserAddress) {
     return (
       <Layout>
         <Grid sx={classes.mt1} container spacing={1}>

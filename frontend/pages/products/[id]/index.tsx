@@ -269,6 +269,7 @@ const ItemView = ({ item, bidOrders, bestBid, minter, maker, collection }: Props
                 )}
                 <ListItem>
                   {item.auction.toString() === 'true' &&
+                    currentUserAddress &&
                     currentUserAddress.toLowerCase() !== item.maker.toLowerCase() && (
                       <Button
                         fullWidth
@@ -281,6 +282,7 @@ const ItemView = ({ item, bidOrders, bestBid, minter, maker, collection }: Props
                       </Button>
                     )}
                   {item.auction.toString() === 'false' &&
+                    currentUserAddress &&
                     currentUserAddress.toLowerCase() !== item.maker.toLowerCase() && (
                       <Button
                         fullWidth

@@ -16,6 +16,8 @@ import { useState } from 'react';
 import CollectionCard from '../components/card/CollectionCard';
 import { CollectionProfile, NFTCollection, UserProfile, ListStatus } from '../common/types';
 import UserCard from '../components/card/UserCard';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/configureStore';
 
 const PAGE_SIZE = 12;
 
@@ -91,6 +93,8 @@ function a11yProps(index: number) {
 
 const Search = (props: Prop) => {
   const router = useRouter();
+
+  const currentUserAddress = useSelector((state: RootState) => state.currentUser);
 
   const {
     categories,
@@ -334,35 +338,37 @@ const Search = (props: Prop) => {
             />
           </Grid>
         </TabPanel>
-        <TabPanel value={tab} index={2}>
-          <Grid sx={classes.mt1} container spacing={3}>
-            <Grid item>
-              {users.length === 0 ? 'No' : userCount} Results
-              {query !== 'all' && query !== '' && ' : ' + query}
-              {query !== 'all' && query !== '' ? (
-                <Button onClick={() => router.push('/search')}>
-                  <CancelIcon />
-                </Button>
-              ) : null}
-            </Grid>
+        {currentUserAddress && (
+          <TabPanel value={tab} index={2}>
             <Grid sx={classes.mt1} container spacing={3}>
-              {users.length > 0 &&
-                users.map((user: UserProfile) => (
-                  <Grid item md={3} key={user.username}>
-                    <UserCard user={user} />
-                  </Grid>
-                ))}
+              <Grid item>
+                {users.length === 0 ? 'No' : userCount} Results
+                {query !== 'all' && query !== '' && ' : ' + query}
+                {query !== 'all' && query !== '' ? (
+                  <Button onClick={() => router.push('/search')}>
+                    <CancelIcon />
+                  </Button>
+                ) : null}
+              </Grid>
+              <Grid sx={classes.mt1} container spacing={3}>
+                {users.length > 0 &&
+                  users.map((user: UserProfile) => (
+                    <Grid item md={3} key={user.username}>
+                      <UserCard user={user} />
+                    </Grid>
+                  ))}
+              </Grid>
+              <Pagination
+                sx={classes.mt1}
+                defaultPage={userPage ? parseInt(userPage.toString()) : 1}
+                count={userPages}
+                variant='outlined'
+                color='primary'
+                onChange={userPageHandler}
+              />
             </Grid>
-            <Pagination
-              sx={classes.mt1}
-              defaultPage={userPage ? parseInt(userPage.toString()) : 1}
-              count={userPages}
-              variant='outlined'
-              color='primary'
-              onChange={userPageHandler}
-            />
-          </Grid>
-        </TabPanel>
+          </TabPanel>
+        )}
       </Container>
     </Layout>
   );
