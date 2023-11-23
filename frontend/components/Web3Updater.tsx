@@ -19,6 +19,7 @@ export default function Web3Updater() {
           dispatch(currentUserChanged(account[0]));
           window.location.reload();
         } else {
+          dispatch(currentUserChanged(''));
           router.push('/');
         }
       });
