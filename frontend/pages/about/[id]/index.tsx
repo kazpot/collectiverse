@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Box, Button, Grid, Tab, Tabs, Typography, TextField } from '@mui/material';
 import Layout from '../../../components/Layout';
 import OwnAssets from '../../../components/OwnAssets';
@@ -27,6 +28,7 @@ import { getUserItemsByTokenIds, updateOwnedItems } from '../../../service/item'
 import List from '../../../models/List';
 import { ethers } from 'ethers';
 import { useSnackbar } from 'notistack';
+import { RootState } from '../../../store/configureStore';
 
 function TabPanel(props: any) {
   const { children, value, index, ...other } = props;
@@ -83,6 +85,8 @@ const Assets = ({
   const [tab, setTab] = useState(0);
   const [itemProperty, setItemProperty] = useState({} as any);
 
+  const currentUserAddress = useSelector((state: RootState) => state.currentUser);
+
   const handleTabChange = (e: any, newValue: number) => {
     setTab(newValue);
   };
@@ -112,7 +116,7 @@ const Assets = ({
       enqueueSnackbar('Successfully updated!', { variant: 'success' });
       window.location.reload();
     } else {
-      enqueueSnackbar('Failed to update!', { variant: 'error' });
+      enqueueSnackbar('Failed to update owned items!', { variant: 'error' });
     }
   };
 
@@ -164,38 +168,42 @@ const Assets = ({
               </Tabs>
             </Box>
             <TabPanel value={tab} index={0}>
-              <Button
-                onClick={updateHandler}
-                variant='outlined'
-                sx={{
-                  backgroundColor: 'white',
-                  color: 'black',
-                  width: '100px',
-                  fontSize: '15px',
-                  margin: '8px',
-                  borderColor: 'black',
-                  '&:hover': {
-                    background: '#fcfcfc',
-                  },
-                }}
-              >
-                Update
-              </Button>
-              <TextField
-                label='Optional'
-                name='nftAddress'
-                type='string'
-                value={itemProperty.nftAddress}
-                placeholder='NFT address to be imported (42 characters starting with 0x)'
-                inputProps={{
-                  maxLength: 42,
-                  style: {
-                    fontSize: '12px',
-                    width: 600,
-                  },
-                }}
-                onChange={handleChange}
-              />
+              {currentUserAddress.toLowerCase() === userProfile.address.toLowerCase() && (
+                <Button
+                  onClick={updateHandler}
+                  variant='outlined'
+                  sx={{
+                    backgroundColor: 'white',
+                    color: 'black',
+                    width: '100px',
+                    fontSize: '15px',
+                    margin: '8px',
+                    borderColor: 'black',
+                    '&:hover': {
+                      background: '#fcfcfc',
+                    },
+                  }}
+                >
+                  Update
+                </Button>
+              )}
+              {currentUserAddress.toLowerCase() === userProfile.address.toLowerCase() && (
+                <TextField
+                  label='Optional'
+                  name='nftAddress'
+                  type='string'
+                  value={itemProperty.nftAddress}
+                  placeholder='NFT address to be imported (42 characters starting with 0x)'
+                  inputProps={{
+                    maxLength: 42,
+                    style: {
+                      fontSize: '12px',
+                      width: 600,
+                    },
+                  }}
+                  onChange={handleChange}
+                />
+              )}
               <OwnAssets
                 userProfile={userProfile}
                 tagOptions={tagOptions}
