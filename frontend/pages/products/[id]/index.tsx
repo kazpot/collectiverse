@@ -33,7 +33,7 @@ import db from '../../../utils/db';
 import { useSnackbar } from 'notistack';
 import NFTImage from '../../../components/NFTImage';
 import classes from '../../../utils/classes';
-import { chains } from '../../../common/const';
+import { chains, nariveSymbol } from '../../../common/const';
 import Bid from '../../../models/Bid';
 import { useState } from 'react';
 import { convertTimestamp } from '../../../common/date';
@@ -244,7 +244,8 @@ const ItemView = ({ item, bidOrders, bestBid, minter, maker, collection }: Props
                       </Grid>
                       <Grid item xs={6}>
                         <Typography sx={{ fontSize: '25px', fontWeight: 'bold' }}>
-                          {item.price} {chains[chainId] && chains[chainId].nativeSymbol}
+                          {item.price}{' '}
+                          {chains[chainId] ? chains[chainId].nativeSymbol : nariveSymbol}
                         </Typography>
                       </Grid>
                     </Grid>

@@ -4,7 +4,7 @@ import { NFTCollection, TimeRendererProps } from '../common/types';
 import NFTImage from '../components/NFTImage';
 import Countdown from 'react-countdown';
 import NextLink from 'next/link';
-import { chains } from '../common/const';
+import { chains, nariveSymbol } from '../common/const';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/configureStore';
 import json2mq from 'json2mq';
@@ -177,7 +177,7 @@ export default function FeaturedImage({ item }: Props) {
                   fontWeight: 'bold',
                 }}
               >
-                {item.price} {chains[chainId] && chains[chainId].nativeSymbol}
+                {item.price} {chains[chainId] ? chains[chainId].nativeSymbol : nariveSymbol}
               </div>
             </div>
           )}

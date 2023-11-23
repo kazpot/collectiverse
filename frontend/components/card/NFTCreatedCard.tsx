@@ -12,7 +12,7 @@ import Countdown from 'react-countdown';
 import NextLink from 'next/link';
 import NFTCardMedia from '../NFTCardMedia';
 import { NFTCollection, TimeRendererProps } from '../../common/types';
-import { chains } from '../../common/const';
+import { chains, nariveSymbol } from '../../common/const';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/configureStore';
 
@@ -85,7 +85,7 @@ export default function NFTCreatedCard({
                 <span style={{ color: 'grey' }}>Fixed price</span>
                 <br />
                 <span style={{ fontWeight: 'bold', fontSize: '14px' }}>
-                  {item.price} {chains[chainId] && chains[chainId].nativeSymbol}
+                  {item.price} {chains[chainId] ? chains[chainId].nativeSymbol : nariveSymbol}
                 </span>
               </Typography>
             )}

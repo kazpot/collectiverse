@@ -19,6 +19,8 @@ export const emptySig: Sig = {
   s: '0x0000000000000000000000000000000000000000000000000000000000000000',
 };
 
+export const nariveSymbol: string = 'TOPOS';
+
 export const chains: {
   [char: number]: { chainName: string; nativeSymbol: string; auctionSymbol: string };
 } = {
