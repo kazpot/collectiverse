@@ -21,8 +21,6 @@ export const signUp = async (userAddr: string): Promise<boolean> => {
 
 export const isUser = async (userAddress: string): Promise<boolean> => {
   try {
-    //const currentUser = await getCurrentUser();
-    //const userAddress = await currentUser.getAddress();
     const userProfile = await getUserProfile(userAddress);
     if (!userProfile) {
       return false;

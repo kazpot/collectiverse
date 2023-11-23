@@ -56,6 +56,7 @@ export default function Layout({ title, description, children }: Props) {
       const res = await isUser(currentUserAddress);
       if (res) {
         setSigned(res);
+        dispatch(currentUserChanged(currentUserAddress));
       } else {
         dispatch(currentUserChanged(''));
       }
