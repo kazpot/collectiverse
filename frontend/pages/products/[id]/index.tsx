@@ -268,28 +268,30 @@ const ItemView = ({ item, bidOrders, bestBid, minter, maker, collection }: Props
                   </ListItem>
                 )}
                 <ListItem>
-                  {item.auction.toString() === 'true' && currentUserAddress != item.maker && (
-                    <Button
-                      fullWidth
-                      variant='contained'
-                      color='primary'
-                      disabled={parseInt(item.expirationTime) * 1000 <= Date.now()}
-                      onClick={() => dispatch(openModal())}
-                    >
-                      Place Bid
-                    </Button>
-                  )}
-                  {item.auction.toString() === 'false' && currentUserAddress != item.maker && (
-                    <Button
-                      fullWidth
-                      variant='contained'
-                      color='primary'
-                      onClick={buyNow}
-                      disabled={disableBuyButton}
-                    >
-                      Buy Now
-                    </Button>
-                  )}
+                  {item.auction.toString() === 'true' &&
+                    currentUserAddress.toLowerCase() !== item.maker.toLowerCase() && (
+                      <Button
+                        fullWidth
+                        variant='contained'
+                        color='primary'
+                        disabled={parseInt(item.expirationTime) * 1000 <= Date.now()}
+                        onClick={() => dispatch(openModal())}
+                      >
+                        Place Bid
+                      </Button>
+                    )}
+                  {item.auction.toString() === 'false' &&
+                    currentUserAddress.toLowerCase() !== item.maker.toLowerCase() && (
+                      <Button
+                        fullWidth
+                        variant='contained'
+                        color='primary'
+                        onClick={buyNow}
+                        disabled={disableBuyButton}
+                      >
+                        Buy Now
+                      </Button>
+                    )}
                 </ListItem>
               </List>
             </Card>

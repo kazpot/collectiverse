@@ -60,7 +60,7 @@ export const getNFTCollectionsByMaker = async (
       const address = await nft.ownerOf(tokenId);
 
       // user must be current NFT owner
-      if (address != makerAddress) {
+      if (address.toLowerCase() !== makerAddress.toLowerCase()) {
         continue;
       }
 
@@ -105,7 +105,7 @@ export const getUserItems = async (userAddress: string): Promise<UserItem[]> => 
       const address = await nft.ownerOf(tokenId);
 
       // user must be current NFT owner
-      if (address != userAddress) {
+      if (address.toLowerCase() !== userAddress.toLowerCase()) {
         continue;
       }
 
@@ -204,7 +204,7 @@ export const getBidOrders = async (sellItem: NFTCollection): Promise<BidOrder[]>
     if (
       side === Side.Buy &&
       !cancelledOrFinalized &&
-      nftAddress == sellItem.nftAddress &&
+      nftAddress.toLowerCase() === sellItem.nftAddress.toLowerCase() &&
       tokenId == sellItem.tokenId
     ) {
       buyItems.push(events[i]);
