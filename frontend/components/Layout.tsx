@@ -170,24 +170,26 @@ export default function Layout({ title, description, children }: Props) {
                   <Link style={{ textDecoration: 'none' }}>Create</Link>
                 </NextLink>
               )}
-              <Button
-                aria-controls='user-menu'
-                sx={classes.navbarButton}
-                onClick={userClickHandler}
-              >
-                {signed &&
-                  chains[chainId] &&
-                  shortAddress(currentUserAddress, chains[chainId].chainName)}
-              </Button>
-              <Menu
-                id='user-menu'
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={userMenuCloseHandler}
-              >
-                {signed && <MenuItem onClick={aboutHandler}>View Profile</MenuItem>}
-                {signed && <MenuItem onClick={collectionHandler}>Create Collection</MenuItem>}
-              </Menu>
+              {signed && chains[chainId] && (
+                <Button
+                  aria-controls='user-menu'
+                  sx={classes.navbarButton}
+                  onClick={userClickHandler}
+                >
+                  {shortAddress(currentUserAddress, chains[chainId].chainName)}
+                </Button>
+              )}
+              {signed && chains[chainId] && (
+                <Menu
+                  id='user-menu'
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={userMenuCloseHandler}
+                >
+                  {signed && <MenuItem onClick={aboutHandler}>View Profile</MenuItem>}
+                  {signed && <MenuItem onClick={collectionHandler}>Create Collection</MenuItem>}
+                </Menu>
+              )}
               {!signed && (
                 <Button
                   aria-controls='user-menu'
