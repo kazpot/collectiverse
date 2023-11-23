@@ -110,15 +110,6 @@ export default function Layout({ title, description, children }: Props) {
     }
   };
 
-  if (!chains[chainId]) {
-    return (
-      <div>
-        chain of chain ID: {chainId} not supported... Please switch your chain on the wallet (eg.
-        metamask).
-      </div>
-    );
-  }
-
   return (
     <div>
       <Head>
