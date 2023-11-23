@@ -54,7 +54,6 @@ NEXT_PUBLIC_IPFS_SECRET=<infura ipfs api key secret>
 
 NEXT_PUBLIC_EXCHANGE_ADDRESS=<exchange contract address>
 NEXT_PUBLIC_NFT_ADDRESS=<nft contract address>
-NEXT_PUBLIC_WETH_ADDRESS=<weth contract address>
 
 NEXT_PUBLIC_MONGODB_URI=<mongodb uri>
 

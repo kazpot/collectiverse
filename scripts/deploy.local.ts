@@ -121,7 +121,6 @@ async function main() {
   console.log("-- .env --");
   console.log(`NEXT_PUBLIC_EXCHANGE_ADDRESS=${exchange.address}`);
   console.log(`NEXT_PUBLIC_NFT_ADDRESS=${nft.address}`);
-  console.log(`NEXT_PUBLIC_WETH_ADDRESS=${mockWETH.address}`);
 }
 
 main()

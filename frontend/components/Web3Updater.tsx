@@ -23,7 +23,7 @@ export default function Web3Updater() {
         }
       });
     }
-  }, [dispatch]);
+  }, [dispatch, router]);
 
   return <></>;
 }
