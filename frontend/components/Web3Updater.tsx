@@ -17,8 +17,10 @@ export default function Web3Updater() {
       window.ethereum.on('accountsChanged', (account: any) => {
         if (account[0]) {
           dispatch(currentUserChanged(account[0]));
+          window.location.reload();
         } else {
           dispatch(currentUserChanged(''));
+          router.push('/');
         }
       });
     }
