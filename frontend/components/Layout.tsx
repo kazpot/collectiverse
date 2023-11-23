@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import NextLink from 'next/link';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/configureStore';
 import { useEffect, useState } from 'react';
 import { signUp, isUser } from '../service/user';
@@ -25,6 +25,7 @@ import classes from '../utils/classes';
 import { chains } from '../common/const';
 import Image from 'next/image';
 import { useSnackbar } from 'notistack';
+import { currentUserChanged } from '../actions/currentUser.actions';
 
 type Props = {
   title?: string;
@@ -34,6 +35,7 @@ type Props = {
 
 export default function Layout({ title, description, children }: Props) {
   const router = useRouter();
+  const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
   const darkMode: boolean = useSelector((state: RootState) => state.darkMode);
@@ -50,11 +52,16 @@ export default function Layout({ title, description, children }: Props) {
         setSigned(false);
         return;
       }
-      const res = await isUser();
-      setSigned(res);
+
+      const res = await isUser(currentUserAddress);
+      if (res) {
+        setSigned(res);
+      } else {
+        dispatch(currentUserChanged(''));
+      }
     }
     init();
-  });
+  }, [currentUserAddress, dispatch]);
 
   const theme = createTheme({
     typography: {
@@ -111,13 +118,22 @@ export default function Layout({ title, description, children }: Props) {
       setSigned(false);
       return;
     }
-    const res = await isUser();
-    if (!res) {
-      const user = await getCurrentUser();
-      await signUp(await user.getAddress());
+
+    const user = await getCurrentUser();
+    const userAddress = await user.getAddress();
+
+    const res = await isUser(userAddress);
+    if (res) {
       setSigned(true);
+      dispatch(currentUserChanged(userAddress));
     } else {
-      setSigned(true);
+      const isSignedUp = await signUp(userAddress);
+      if (isSignedUp) {
+        setSigned(true);
+        dispatch(currentUserChanged(userAddress));
+      } else {
+        setSigned(false);
+      }
     }
   };
 
