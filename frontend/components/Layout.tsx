@@ -24,6 +24,7 @@ import { getCurrentUser, shortAddress } from '../common/util';
 import classes from '../utils/classes';
 import { chains } from '../common/const';
 import Image from 'next/image';
+import { useSnackbar } from 'notistack';
 
 type Props = {
   title?: string;
@@ -33,6 +34,7 @@ type Props = {
 
 export default function Layout({ title, description, children }: Props) {
   const router = useRouter();
+  const { enqueueSnackbar } = useSnackbar();
 
   const darkMode: boolean = useSelector((state: RootState) => state.darkMode);
   const currentUserAddress: string = useSelector((state: RootState) => state.currentUser);
@@ -44,6 +46,10 @@ export default function Layout({ title, description, children }: Props) {
 
   useEffect(() => {
     async function init() {
+      if (!window.ethereum) {
+        setSigned(false);
+        return;
+      }
       const res = await isUser();
       setSigned(res);
     }
@@ -100,6 +106,11 @@ export default function Layout({ title, description, children }: Props) {
   };
 
   const handleSignIn = async () => {
+    if (!window.ethereum) {
+      enqueueSnackbar('No wallet found! Failed to sign in...', { variant: 'error' });
+      setSigned(false);
+      return;
+    }
     const res = await isUser();
     if (!res) {
       const user = await getCurrentUser();
