@@ -6,7 +6,6 @@ import {
   Toolbar,
   Typography,
   Link,
-  //  Switch,
   InputBase,
   IconButton,
   Menu,
@@ -18,12 +17,10 @@ import SearchIcon from '@mui/icons-material/Search';
 import NextLink from 'next/link';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/configureStore';
-//import { darkModeOff, darkModeOn } from '../actions/dark.actions';
 import { useEffect, useState } from 'react';
 import { signUp, isUser } from '../service/user';
 import { useRouter } from 'next/router';
 import { getCurrentUser, shortAddress } from '../common/util';
-//import DarkModeIcon from '@mui/icons-material/DarkMode';
 import classes from '../utils/classes';
 import { chains } from '../common/const';
 import Image from 'next/image';
@@ -35,7 +32,6 @@ type Props = {
 };
 
 export default function Layout({ title, description, children }: Props) {
-  //const dispatch = useDispatch();
   const router = useRouter();
 
   const darkMode: boolean = useSelector((state: RootState) => state.darkMode);
@@ -87,10 +83,6 @@ export default function Layout({ title, description, children }: Props) {
     router.push(`/search?query=${query}`);
   };
 
-  // const darkModeChangeHandler = () => {
-  //   darkMode ? dispatch(darkModeOff()) : dispatch(darkModeOn());
-  // };
-
   const userClickHandler = (e: any) => {
     setAnchorEl(e.currentTarget);
   };
@@ -118,6 +110,15 @@ export default function Layout({ title, description, children }: Props) {
     }
   };
 
+  if (!chains[chainId]) {
+    return (
+      <div>
+        chain of chain ID: {chainId} not supported... Please switch your chain on the wallet (eg.
+        metamask).
+      </div>
+    );
+  }
+
   return (
     <div>
       <Head>
@@ -129,9 +130,6 @@ export default function Layout({ title, description, children }: Props) {
         <AppBar position='static' elevation={0} sx={classes.navbar}>
           <Toolbar sx={classes.toolbar}>
             <NextLink href='/' passHref>
-              {/* <Link style={{ textDecoration: 'none' }}>
-                <Typography sx={classes.brand}>CollectiVerse</Typography>
-              </Link> */}
               <Image
                 src='/assets/logo_400x72.png'
                 width={400}
@@ -167,7 +165,7 @@ export default function Layout({ title, description, children }: Props) {
               <NextLink href='/search' passHref>
                 <Link style={{ textDecoration: 'none' }}>Explore</Link>
               </NextLink>
-              {signed && (
+              {signed && chains[chainId] && (
                 <NextLink href={`/create/${currentUserAddress}`} passHref>
                   <Link style={{ textDecoration: 'none' }}>Create</Link>
                 </NextLink>
@@ -177,9 +175,9 @@ export default function Layout({ title, description, children }: Props) {
                 sx={classes.navbarButton}
                 onClick={userClickHandler}
               >
-                {signed && chains[chainId]
-                  ? shortAddress(currentUserAddress, chains[chainId].chainName)
-                  : 'AnonUser'}
+                {signed &&
+                  chains[chainId] &&
+                  shortAddress(currentUserAddress, chains[chainId].chainName)}
               </Button>
               <Menu
                 id='user-menu'
@@ -189,10 +187,6 @@ export default function Layout({ title, description, children }: Props) {
               >
                 {signed && <MenuItem onClick={aboutHandler}>View Profile</MenuItem>}
                 {signed && <MenuItem onClick={collectionHandler}>Create Collection</MenuItem>}
-                {/* <MenuItem>
-                  Dark Mode <DarkModeIcon style={{ verticalAlign: 'middle' }} />
-                  <Switch checked={darkMode} onChange={darkModeChangeHandler}></Switch>
-                </MenuItem> */}
               </Menu>
               {!signed && (
                 <Button
