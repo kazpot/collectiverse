@@ -126,9 +126,11 @@ export default function Layout({ title, description, children }: Props) {
       return;
     }
 
+    // get user addres from wallet extension
     const user = await getCurrentUser();
     const userAddress = await user.getAddress();
 
+    // check if the user is signed up
     const result = await isUser(userAddress);
     if (result) {
       setSigned(true);
