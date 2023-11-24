@@ -1,33 +1,34 @@
 import { FollowedUsers, FollowingUsers, UserProfile } from '../common/types';
 import axios from 'axios';
 import { getCurrentUser } from '../common/util';
+import { ethers } from 'ethers';
 
 const apiServerUri = process.env.NEXT_PUBLIC_API_SERVER_URI || '';
 
-export const signUp = async (userAddr: string): Promise<boolean> => {
+export const signUp = async (userAddress: string): Promise<boolean> => {
   try {
+    const address = ethers.utils.getAddress(userAddress);
     const currentUser = await getCurrentUser();
-    const sig = await currentUser.signMessage(userAddr);
-    const res = await axios.post('/api/users/', { address: userAddr, sig });
+    const sig = await currentUser.signMessage(address);
+    const res = await axios.post('/api/users/', { address: address, sig });
     if (res.status !== 200) {
       return false;
     }
     return true;
   } catch (e) {
-    console.error(e);
     return false;
   }
 };
 
 export const isUser = async (userAddress: string): Promise<boolean> => {
   try {
-    const userProfile = await getUserProfile(userAddress);
+    const address = ethers.utils.getAddress(userAddress);
+    const userProfile = await getUserProfile(address);
     if (!userProfile) {
       return false;
     }
     return true;
   } catch (e) {
-    console.error(e);
     return false;
   }
 };

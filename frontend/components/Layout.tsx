@@ -1,5 +1,4 @@
 import Head from 'next/head';
-import { ethers } from 'ethers';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import {
@@ -49,14 +48,22 @@ export default function Layout({ title, description, children }: Props) {
 
   useEffect(() => {
     async function init() {
+      // if browser don't have wallet extension (eg metamask)
       if (!window.ethereum) {
         setSigned(false);
         return;
       }
 
-      const res = await isUser(ethers.utils.getAddress(currentUserAddress));
-      if (res) {
-        setSigned(res);
+      // new user
+      if (!currentUserAddress) {
+        setSigned(false);
+        return;
+      }
+
+      // check if the user is signed up
+      const result = await isUser(currentUserAddress);
+      if (result) {
+        setSigned(result);
       }
     }
     init();
@@ -112,6 +119,7 @@ export default function Layout({ title, description, children }: Props) {
   };
 
   const handleSignIn = async () => {
+    // if browser don't have wallet extension (eg metamask)
     if (!window.ethereum) {
       enqueueSnackbar('No wallet found! Failed to sign in...', { variant: 'error' });
       setSigned(false);
@@ -121,13 +129,13 @@ export default function Layout({ title, description, children }: Props) {
     const user = await getCurrentUser();
     const userAddress = await user.getAddress();
 
-    const res = await isUser(userAddress);
-    if (res) {
+    const result = await isUser(userAddress);
+    if (result) {
       setSigned(true);
       dispatch(currentUserChanged(userAddress));
     } else {
-      const isSignedUp = await signUp(userAddress);
-      if (isSignedUp) {
+      const result = await signUp(userAddress);
+      if (result) {
         setSigned(true);
         dispatch(currentUserChanged(userAddress));
       } else {

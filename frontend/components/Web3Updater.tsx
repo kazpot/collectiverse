@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { currentUserChanged } from '../actions/currentUser.actions';
 import { chainIdChainged } from '../actions/chainId.actions';
 import { useRouter } from 'next/router';
+import { isUser } from '../service/user';
 
 export default function Web3Updater() {
   const dispatch = useDispatch();
@@ -14,13 +15,17 @@ export default function Web3Updater() {
         dispatch(chainIdChainged(chainId));
         window.location.reload();
       });
-      window.ethereum.on('accountsChanged', (account: any) => {
-        if (account[0]) {
-          dispatch(currentUserChanged(account[0]));
-          window.location.reload();
-        } else {
+      window.ethereum.on('accountsChanged', async (account: any) => {
+        const address = account[0];
+        if (!address) {
           dispatch(currentUserChanged(''));
-          router.push('/');
+        } else {
+          const result = await isUser(address);
+          if (result) {
+            dispatch(currentUserChanged(address));
+          } else {
+            dispatch(currentUserChanged(''));
+          }
         }
       });
     }
