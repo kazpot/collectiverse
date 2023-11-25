@@ -252,7 +252,6 @@ export const updateOwnedItems = async (
     const events = sentEvents
       .concat(receivedEvents)
       .sort((a, b) => a.blockNumber - b.blockNumber || a.transactionIndex - b.transactionIndex);
-    // console.log(events);
 
     const owned = new Set<number>();
 
@@ -271,32 +270,43 @@ export const updateOwnedItems = async (
     let userItems = [];
     for (const tokenId of owned.values()) {
       const tokenUri = await nft.tokenURI(tokenId);
-      const item = await axios.get(tokenUri);
+      try {
+        // check tokenUri is valid URL, if not throw error
+        new URL(tokenUri);
 
-      const req = await fetch(item.data.image, { method: 'HEAD' });
-      const mimeType = req.headers.get('content-type') || '';
+        const result = await axios.get(tokenUri);
+        const req = await fetch(result.data.image, { method: 'HEAD' });
+        const mimeType = req.headers.get('content-type') || '';
 
-      userItems.push({
-        tokenId,
-        image: item.data.image,
-        name: item.data.name,
-        description: item.data.description,
-        mimeType,
-        tokenUri,
-      });
+        userItems.push({
+          tokenId,
+          image: result.data.image,
+          name: result.data.name,
+          description: result.data.description,
+          mimeType,
+          tokenUri,
+        });
+      } catch (error) {
+        console.log(
+          `Failed to get meta data of nftAddress: ${nftAddr}, tokenId: ${tokenId}, tokenUri: ${tokenUri}`,
+        );
+        continue;
+      }
     }
-    console.log(userItems);
+
+    if (userItems.length === 0) {
+      return false;
+    }
 
     const signer = await getCurrentUser();
     const currentUserAddress = await signer.getAddress();
     const sig = await signer.signMessage(currentUserAddress);
-    const res = await axios.post(`${apiServerUri}/api/nfts`, {
+    await axios.post(`${apiServerUri}/api/nfts`, {
       userItems,
       owner: holderAddress,
       nftAddress: nftAddr,
       sig,
     });
-    console.log(res);
   } catch (error) {
     console.error(error);
     return false;

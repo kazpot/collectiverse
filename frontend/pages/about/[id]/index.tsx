@@ -112,8 +112,8 @@ const Assets = ({
       }
     }
 
-    const res = await updateOwnedItems(userProfile.address, nftAddress);
-    if (res) {
+    const result = await updateOwnedItems(userProfile.address, nftAddress);
+    if (result) {
       enqueueSnackbar('Successfully updated!', { variant: 'success' });
       router.push(`/about/${currentUserAddress}`);
     } else {
