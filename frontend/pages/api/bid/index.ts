@@ -33,7 +33,7 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
   });
   await bid.save();
 
-  const bestBids = await Bid.find({ listId: order.parentId }).sort({ price: -1 }).limit(1);
+  const bestBids = await Bid.find({ parentId: order.parentId }).sort({ price: -1 }).limit(1);
 
   await List.updateOne(
     { listId: order.parentId },
