@@ -57,7 +57,7 @@ export default function CreateCollectionForm({ collNames, collIds }: Props) {
     });
     const fileInfo: ReadableStream<Uint8Array> = (await filePromise) as ReadableStream<Uint8Array>;
 
-    const added = await client.add(fileInfo);
+    const added = await client.add(fileInfo, { pin: true });
     return added.path;
   };
 

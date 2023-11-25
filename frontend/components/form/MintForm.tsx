@@ -119,6 +119,7 @@ export default function MintForm({ tagOptions, categoryOptions, collections }: P
 
     try {
       const added = await client.add(file, {
+        pin: true,
         progress: (prog) => {
           console.log(`received: ${prog}, size: ${file.size}`);
           console.log(Math.floor((prog / file.size) * 100));
@@ -167,7 +168,7 @@ export default function MintForm({ tagOptions, categoryOptions, collections }: P
       image: fileUrl,
     });
     try {
-      const added = await client.add(data);
+      const added = await client.add(data, { pin: true });
       const ipfsFilePathUrl = `${ipfsFileUrl}${added.path}`;
 
       // unixtime - 9h

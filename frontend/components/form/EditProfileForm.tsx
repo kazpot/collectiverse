@@ -58,7 +58,7 @@ export default function EditProfileForm() {
     });
 
     const fileInfo: ReadableStream<Uint8Array> = (await filePromise) as ReadableStream<Uint8Array>;
-    const added = await client.add(fileInfo);
+    const added = await client.add(fileInfo, { pin: true });
     const coverImage = `${ipfsFileUrl}${added.path}`;
     setItemProperty({ ...itemProperty, coverImage });
   };
@@ -85,7 +85,7 @@ export default function EditProfileForm() {
     });
     const fileInfo: ReadableStream<Uint8Array> = (await filePromise) as ReadableStream<Uint8Array>;
 
-    const added = await client.add(fileInfo);
+    const added = await client.add(fileInfo, { pin: true });
     const profileImage = `${ipfsFileUrl}${added.path}`;
     setItemProperty({ ...itemProperty, profileImage });
   };
