@@ -29,6 +29,7 @@ import List from '../../../models/List';
 import { ethers } from 'ethers';
 import { useSnackbar } from 'notistack';
 import { RootState } from '../../../store/configureStore';
+import router from 'next/router';
 
 function TabPanel(props: any) {
   const { children, value, index, ...other } = props;
@@ -114,7 +115,7 @@ const Assets = ({
     const res = await updateOwnedItems(userProfile.address, nftAddress);
     if (res) {
       enqueueSnackbar('Successfully updated!', { variant: 'success' });
-      window.location.reload();
+      router.push(`/about/${currentUserAddress}`);
     } else {
       enqueueSnackbar('Failed to update owned items!', { variant: 'error' });
     }
