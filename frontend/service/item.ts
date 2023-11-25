@@ -166,8 +166,8 @@ export const getUserItemsByTokenIds = async (
       }
 
       userItems.push({
-        id: `${nftAddress}:${tokenId}`,
-        nftAddress: nft.address,
+        id: `${nftDocs[i].nftAddress}:${tokenId}`,
+        nftAddress: nftDocs[i].nftAddress,
         maker: owner,
         owner,
         tokenId,
@@ -292,10 +292,6 @@ export const updateOwnedItems = async (
         );
         continue;
       }
-    }
-
-    if (userItems.length === 0) {
-      return false;
     }
 
     const signer = await getCurrentUser();

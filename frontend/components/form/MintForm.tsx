@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { mint, list } from '../../service/order';
 import {
@@ -63,21 +63,6 @@ export default function MintForm({ tagOptions, categoryOptions, collections }: P
   });
   const [tags, setTags] = useState<string[]>([]);
   const [progress, setProgress] = useState<number>(0);
-
-  useEffect(() => {
-    // async function init() {
-    //   try {
-    //     const res = await isApproved();
-    //     if (!res) {
-    //       router.push('/');
-    //     }
-    //   } catch (e: any) {
-    //     console.log(e);
-    //     router.push('/');
-    //   }
-    // }
-    // init();
-  });
 
   const handleChange = (e: any) => {
     if (e.target.name === 'price') {

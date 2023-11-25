@@ -103,7 +103,7 @@ export const list = async (
     const expirationTime = item.expirationTime;
     const maker = await signer.getAddress();
 
-    const nft = new ethers.Contract(nftAddress, NFT.abi, signer);
+    const nft = new ethers.Contract(item.nftAddress, NFT.abi, signer);
     const exchange = new ethers.Contract(exchangeAddress, Exchange.abi, signer);
 
     const proxyImplAddress = await exchange.proxyImplementation();
@@ -148,7 +148,12 @@ export const list = async (
     const tx2 = await t2.wait();
     console.log(tx2);
 
-    const hash = tx2.events[2]?.args?.[1];
+    let hash;
+    for (const event of tx2.events) {
+      if (event.event === 'OrderCreated') {
+        hash = event.args[1];
+      }
+    }
     const sig = await signer.signMessage(hash);
 
     const res = await axios.post(`${apiServerUri}/api/list`, {
@@ -217,7 +222,12 @@ export const createFirstBidOrder = async (
     const tx = await t.wait();
     console.log(tx);
 
-    const hash = tx.events[1].args?.[1];
+    let hash;
+    for (const event of tx.events) {
+      if (event.event === 'OrderCreated') {
+        hash = event.args[1];
+      }
+    }
     const sig = await signer.signMessage(hash);
 
     await axios.post(`${apiServerUri}/api/bid`, {
@@ -294,7 +304,12 @@ export const createBidOrder = async (
     const tx = await t.wait();
     console.log(tx);
 
-    const hash = tx.events[3].args?.[1];
+    let hash;
+    for (const event of tx.events) {
+      if (event.event === 'OrderCreated') {
+        hash = event.args[1];
+      }
+    }
     const sig = await signer.signMessage(hash);
 
     await axios.post(`${apiServerUri}/api/bid`, {
