@@ -17,6 +17,8 @@ const listSchema = new mongoose.Schema(
     tags: { type: [String], required: false },
     price: { type: Number, required: true },
     bestPrice: { type: Number },
+    bestBidder: { type: String },
+    bestBidHash: { type: String },
     mimeType: { type: String, required: true },
     mintTime: { type: String, required: true },
     listingTime: { type: String, required: true },

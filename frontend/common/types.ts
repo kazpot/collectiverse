@@ -53,6 +53,8 @@ export interface NFTCollection {
   tags: string[];
   price: string;
   bestPrice: string;
+  bestBidder: string;
+  bestBidHash: string;
   mimeType: string;
   mintTime: string;
   listingTime: string;

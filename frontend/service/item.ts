@@ -191,7 +191,7 @@ export const getUserItemsByTokenIds = async (
  * @returns
  */
 export const getBidOrders = async (sellItem: NFTCollection): Promise<BidOrder[]> => {
-  const eventFilter = exchange.filters.OrderCreated();
+  const eventFilter = exchange.filters.OrderCreated(Side.Buy, sellItem.bestBidHash, zeroAddress);
   const events: ethers.Event[] = await exchange.queryFilter(eventFilter);
 
   let buyItems: ethers.Event[] = [];

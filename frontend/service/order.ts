@@ -74,6 +74,8 @@ export const mint = async (
       listingTime: '',
       status: ListStatus.Listing,
       bestPrice: '',
+      bestBidder: '',
+      bestBidHash: '',
     };
   } catch (error) {
     console.error(error);

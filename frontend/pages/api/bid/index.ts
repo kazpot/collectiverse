@@ -38,7 +38,11 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
   await List.updateOne(
     { listId: order.parentId },
     {
-      $set: { bestPrice: bestBids[0].price },
+      $set: {
+        bestPrice: bestBids[0].price,
+        bestBidder: bestBids[0].taker,
+        bestBidHash: bestBids[0].hash,
+      },
       $currentDate: { lastModified: true },
     },
   );

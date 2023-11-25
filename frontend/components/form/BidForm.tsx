@@ -47,14 +47,14 @@ export default function BidForm({ item, bestBid }: Props) {
       alert('Price must not be empty');
       return;
     }
-    let res;
+    let result;
     if (bestBid === '0') {
-      res = await createFirstBidOrder(item, newPrice.toString());
+      result = await createFirstBidOrder(item, newPrice.toString());
     } else {
-      res = await createBidOrder(item, newPrice.toString(), bestBid);
+      result = await createBidOrder(item, newPrice.toString(), bestBid);
     }
 
-    if (res) {
+    if (result) {
       enqueueSnackbar('Successfull bid!', { variant: 'success' });
       router.push(`/products/${item.nftAddress}:${item.tokenId}`);
       dispatch(closeModal());

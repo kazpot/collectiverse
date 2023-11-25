@@ -136,6 +136,8 @@ export default function ListForm({
       hash: '',
       maker: '',
       bestPrice: '',
+      bestBidder: '',
+      bestBidHash: '',
       listingTime: '',
       status: ListStatus.Listing,
     };
