@@ -1,7 +1,3 @@
-# CollectiVerse
-
-CollectiVerse is a NFT exchange where traders can buy and sell NFT tokens.
-
 ## Solidity Version
 
 - Solidity 0.8
@@ -58,29 +54,4 @@ NEXT_PUBLIC_NFT_ADDRESS=<nft contract address>
 NEXT_PUBLIC_MONGODB_URI=<mongodb uri>
 
 NEXT_PUBLIC_API_SERVER_URI=<api server endpoint>
-```
-
-3. Deploy smart contracts locally
-
-```
-$ yarn install
-$ yarn compile
-
-// open terminal
-$ yarn serve
-
-// open new terminal
-$ yarn deploy:local
-```
-
-4. Run frontend
-
-```
-$ yarn frontend
-```
-
-## Test
-
-```
-$ yarn test
 ```
