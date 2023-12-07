@@ -3,6 +3,7 @@ import db from '../../../utils/db';
 import { NextApiRequest, NextApiResponse } from 'next';
 import Collection from '../../../models/Collection';
 import { ethers } from 'ethers';
+import corsMiddleware from '../../middlewares/cors';
 
 const handler = nc<NextApiRequest, NextApiResponse>({
   onError: (err, _, res) => {
@@ -34,4 +35,4 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
   }
 });
 
-export default handler;
+export default corsMiddleware(handler);

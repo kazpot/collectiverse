@@ -2,6 +2,7 @@ import nc from 'next-connect';
 import db from '../../../utils/db';
 import { NextApiRequest, NextApiResponse } from 'next';
 import User from '../../../models/User';
+import corsMiddleware from '../../middlewares/cors';
 
 const handler = nc<NextApiRequest, NextApiResponse>({
   onError: (err, _, res) => {
@@ -19,4 +20,4 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
   res.status(404).send('user not found');
 });
 
-export default handler;
+export default corsMiddleware(handler);
