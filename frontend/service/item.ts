@@ -80,7 +80,7 @@ export const getNFTCollectionsByMaker = async (
 export const getMinter = async (tokenId: number): Promise<string> => {
   const nftOwnerFilter = nft.filters.Transfer(zeroAddress, null, ethers.BigNumber.from(tokenId));
 
-  const batchSize = 10000;
+  const batchSize = 1000;
   const latestBlockNumber = await provider.getBlockNumber();
 
   let owner = null;
