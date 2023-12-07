@@ -79,8 +79,16 @@ export const getNFTCollectionsByMaker = async (
  */
 export const getMinter = async (tokenId: number): Promise<string> => {
   const nftOwnerFilter = nft.filters.Transfer(zeroAddress, null, ethers.BigNumber.from(tokenId));
-  const nftEvents: ethers.Event[] = await nft.queryFilter(nftOwnerFilter);
-  const owner = nftEvents[0].args?.[1];
+
+  const batchSize = 1000;
+  const latestBlockNumber = await provider.getBlockNumber();
+
+  let owner;
+  for (let startBlock = 0; startBlock <= latestBlockNumber; startBlock += batchSize) {
+    const endBlock = Math.min(startBlock + batchSize - 1, latestBlockNumber);
+    const nftEvents: ethers.Event[] = await nft.queryFilter(nftOwnerFilter, startBlock, endBlock);
+    owner = nftEvents[0].args?.[1];
+  }
   return owner;
 };
 
