@@ -1,7 +1,13 @@
 module.exports = {
   reactStrictMode: true,
   images: {
-    domains: ['ipfs.infura.io', 'ipfs.io', 'gateway.pinata.cloud', 'ipfs.filebase.io'],
+    domains: [
+      'ipfs.infura.io',
+      'ipfs.io',
+      'gateway.pinata.cloud',
+      'ipfs.filebase.io',
+      'cloudflare-ipfs.com',
+    ],
   },
   async headers() {
     return [
