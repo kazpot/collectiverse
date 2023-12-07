@@ -5,6 +5,7 @@ import List from '../../../models/List';
 import { listId } from '../../../common/util';
 import { NFTCollection, ListStatus } from '../../../common/types';
 import { ethers } from 'ethers';
+import corsMiddleware from '../../middlewares/cors';
 
 const handler = nc<NextApiRequest, NextApiResponse>({
   onError: (err, _, res) => {
@@ -51,4 +52,4 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
   res.send(list);
 });
 
-export default handler;
+export default corsMiddleware(handler);
