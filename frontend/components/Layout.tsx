@@ -26,6 +26,7 @@ import { chains } from '../common/const';
 import Image from 'next/image';
 import { useSnackbar } from 'notistack';
 import { currentUserChanged } from '../actions/currentUser.actions';
+import TopSnackbar from './TopSnackbar';
 
 type Props = {
   title?: string;
@@ -45,9 +46,20 @@ export default function Layout({ title, description, children }: Props) {
   const [signed, setSigned] = useState(false);
   const [query, setQuery] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
+  const [topSnackOpen, setTopSnackOpen] = useState(false);
+  const [topSnackText, setTopSnackText] = useState('');
 
   useEffect(() => {
     async function init() {
+      // check connection to topos testnet
+      console.log(chainId);
+      if (chainId === 2359) {
+        setTopSnackOpen(false);
+      } else {
+        setTopSnackOpen(true);
+        setTopSnackText('You are not connected to topos testnet!');
+      }
+
       // if browser don't have wallet extension (eg metamask)
       if (!window.ethereum) {
         setSigned(false);
@@ -234,6 +246,7 @@ export default function Layout({ title, description, children }: Props) {
           <Typography>@2023 CollectiVerse</Typography>
         </footer>
       </ThemeProvider>
+      <TopSnackbar text={topSnackText} open={topSnackOpen} />
     </div>
   );
 }
