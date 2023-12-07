@@ -57,7 +57,7 @@ export default function FeaturedImage({ item }: Props) {
               position: 'absolute',
               left: '10%',
               top: '100px',
-              color: 'white',
+              color: '#D3D3D3',
               fontSize: '40px',
             }}
           >
@@ -81,7 +81,7 @@ export default function FeaturedImage({ item }: Props) {
               position: 'absolute',
               left: '10%',
               top: '310px',
-              color: 'white',
+              color: '#D3D3D3',
               fontSize: '17px',
               width: '500px',
             }}
@@ -118,7 +118,7 @@ export default function FeaturedImage({ item }: Props) {
                   position: 'absolute',
                   left: '10%',
                   top: '610px',
-                  color: 'white',
+                  color: '#D3D3D3',
                   fontSize: '30px',
                   fontWeight: 'bold',
                 }}
@@ -144,7 +144,7 @@ export default function FeaturedImage({ item }: Props) {
                   position: 'absolute',
                   left: '25%',
                   top: '610px',
-                  color: 'white',
+                  color: '#D3D3D3',
                   fontSize: '30px',
                   fontWeight: 'bold',
                 }}
@@ -172,7 +172,7 @@ export default function FeaturedImage({ item }: Props) {
                   position: 'absolute',
                   left: '10%',
                   top: '610px',
-                  color: 'white',
+                  color: '#D3D3D3',
                   fontSize: '30px',
                   fontWeight: 'bold',
                 }}
@@ -195,7 +195,7 @@ export default function FeaturedImage({ item }: Props) {
                   fontWeight: 'bold',
                   padding: '15px',
                   width: '300px',
-                  color: 'white',
+                  color: '#D3D3D3',
                 }}
               >
                 View NFT
