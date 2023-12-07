@@ -105,52 +105,64 @@ export const getMinter = async (tokenId: number): Promise<string> => {
  * @returns UserItem[]
  */
 export const getUserItems = async (userAddress: string): Promise<UserItem[]> => {
-  let userItems = [];
+  const userItems = [];
+
   try {
-    // Transfer(from, to, tokenId)
+    const batchSize = 1000;
+    const latestBlockNumber = await provider.getBlockNumber();
     const eventFilter = nft.filters.Transfer(null, userAddress, null);
-    const events: ethers.Event[] = await nft.queryFilter(eventFilter);
 
-    if (!events.length || events.length === 0) {
-      return [];
-    }
+    for (let startBlock = 0; startBlock <= latestBlockNumber; startBlock += batchSize) {
+      const endBlock = Math.min(startBlock + batchSize - 1, latestBlockNumber);
 
-    for (let i = 0; i < events.length; i++) {
-      const tokenId = events[i].args?.[2];
-      const address = await nft.ownerOf(tokenId);
+      const events: ethers.Event[] = await nft.queryFilter(eventFilter, startBlock, endBlock);
 
-      // user must be current NFT owner
-      if (address.toLowerCase() !== userAddress.toLowerCase()) {
+      if (!events.length || events.length === 0) {
         continue;
       }
 
-      const nftOwnerFilter = nft.filters.Transfer(zeroAddress, null, tokenId);
-      const nftEvents: ethers.Event[] = await nft.queryFilter(nftOwnerFilter);
-      const owner = nftEvents[0].args?.[1];
+      for (let i = 0; i < events.length; i++) {
+        const tokenId = events[i].args?.[2];
+        const address = await nft.ownerOf(tokenId);
 
-      const tokenUri = await nft.tokenURI(tokenId);
-      const item = await axios.get(tokenUri);
+        // user must be current NFT owner
+        if (address.toLowerCase() !== userAddress.toLowerCase()) {
+          continue;
+        }
 
-      const res = await axios.get(item.data.image);
-      const mimeType = res.headers['content-type'];
+        const nftOwnerFilter = nft.filters.Transfer(zeroAddress, null, tokenId);
+        const nftEvents: ethers.Event[] = await nft.queryFilter(
+          nftOwnerFilter,
+          startBlock,
+          endBlock,
+        );
+        const owner = nftEvents[0].args?.[1];
 
-      userItems.push({
-        id: `${nftAddress}:${tokenId}`,
-        nftAddress: nft.address,
-        maker: address,
-        owner,
-        tokenId,
-        tokenUri,
-        image: item.data.image,
-        name: item.data.name,
-        desc: item.data.description,
-        mimeType,
-        listing: false,
-      });
+        const tokenUri = await nft.tokenURI(tokenId);
+        const item = await axios.get(tokenUri);
+
+        const res = await axios.get(item.data.image);
+        const mimeType = res.headers['content-type'];
+
+        userItems.push({
+          id: `${nftAddress}:${tokenId}`,
+          nftAddress: nft.address,
+          maker: address,
+          owner,
+          tokenId,
+          tokenUri,
+          image: item.data.image,
+          name: item.data.name,
+          desc: item.data.description,
+          mimeType,
+          listing: false,
+        });
+      }
     }
   } catch (error) {
     console.error(error);
   }
+
   return userItems;
 };
 
@@ -206,40 +218,48 @@ export const getUserItemsByTokenIds = async (
  * @returns
  */
 export const getBidOrders = async (sellItem: NFTCollection): Promise<BidOrder[]> => {
-  const eventFilter = exchange.filters.OrderCreated(Side.Buy, sellItem.bestBidHash, zeroAddress);
-  const events: ethers.Event[] = await exchange.queryFilter(eventFilter);
+  const bidOrders: BidOrder[] = [];
 
-  let buyItems: ethers.Event[] = [];
-  for (let i = 0; i < events.length; i++) {
-    const side = events[i].args?.[0];
-    const hash = events[i].args?.[1];
-    const nftAddress = events[i].args?.[5];
-    const tokenId = events[i].args?.[6];
-    const cancelledOrFinalized = await exchange.cancelledOrFinalized(hash);
-    if (
-      side === Side.Buy &&
-      !cancelledOrFinalized &&
-      nftAddress.toLowerCase() === sellItem.nftAddress.toLowerCase() &&
-      tokenId == sellItem.tokenId
-    ) {
-      buyItems.push(events[i]);
+  try {
+    const batchSize = 1000;
+    const latestBlockNumber = await provider.getBlockNumber();
+    const eventFilter = exchange.filters.OrderCreated(Side.Buy, sellItem.bestBidHash, zeroAddress);
+
+    for (let startBlock = 0; startBlock <= latestBlockNumber; startBlock += batchSize) {
+      const endBlock = Math.min(startBlock + batchSize - 1, latestBlockNumber);
+
+      const events: ethers.Event[] = await exchange.queryFilter(eventFilter, startBlock, endBlock);
+
+      for (let i = 0; i < events.length; i++) {
+        const side = events[i].args?.[0];
+        const hash = events[i].args?.[1];
+        const nftAddress = events[i].args?.[5];
+        const tokenId = events[i].args?.[6];
+        const cancelledOrFinalized = await exchange.cancelledOrFinalized(hash);
+
+        if (
+          side === Side.Buy &&
+          !cancelledOrFinalized &&
+          nftAddress.toLowerCase() === sellItem.nftAddress.toLowerCase() &&
+          tokenId == sellItem.tokenId
+        ) {
+          const taker = events[i].args?.[3];
+          const createTime = events[i].args?.[8];
+          const bidPrice = ethers.utils.formatUnits(events[i].args?.[7], 'ether');
+
+          bidOrders.push({
+            parentId: sellItem.listId,
+            price: bidPrice,
+            taker,
+            createTime: createTime.toString(),
+          });
+        }
+      }
     }
+  } catch (error) {
+    console.error(error);
   }
 
-  const bidOrders = await Promise.all(
-    buyItems.map(async (e: ethers.Event): Promise<BidOrder> => {
-      const taker = e.args?.[3];
-      const createTime = e.args?.[8];
-      const bidPrice = ethers.utils.formatUnits(e.args?.[7], 'ether');
-
-      return {
-        parentId: sellItem.listId,
-        price: bidPrice,
-        taker,
-        createTime: createTime.toString(),
-      };
-    }),
-  );
   return bidOrders;
 };
 
@@ -252,20 +272,31 @@ export const getBidOrders = async (sellItem: NFTCollection): Promise<BidOrder[]>
 export const updateOwnedItems = async (
   holderAddress: string,
   holderNftAddress: string | null | undefined,
-): Promise<Boolean> => {
+): Promise<boolean> => {
   try {
     const nftAddr = holderNftAddress ? holderNftAddress : nftAddress;
     const nft = new ethers.Contract(nftAddr, NFT.abi, provider);
 
-    // event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+    const batchSize = 1000;
+    const latestBlockNumber = await provider.getBlockNumber();
     const receivedFilter = nft.filters.Transfer(null, holderAddress, null);
     const sentFilter = nft.filters.Transfer(holderAddress, null, null);
 
-    const receivedEvents = await nft.queryFilter(receivedFilter);
-    const sentEvents = await nft.queryFilter(sentFilter);
+    let receivedEvents: ethers.Event[] = [];
+    let sentEvents: ethers.Event[] = [];
 
-    const events = sentEvents
-      .concat(receivedEvents)
+    for (let startBlock = 0; startBlock <= latestBlockNumber; startBlock += batchSize) {
+      const endBlock = Math.min(startBlock + batchSize - 1, latestBlockNumber);
+
+      const receivedBatch = await nft.queryFilter(receivedFilter, startBlock, endBlock);
+      receivedEvents = receivedEvents.concat(receivedBatch);
+
+      const sentBatch = await nft.queryFilter(sentFilter, startBlock, endBlock);
+      sentEvents = sentEvents.concat(sentBatch);
+    }
+
+    const events = receivedEvents
+      .concat(sentEvents)
       .sort((a, b) => a.blockNumber - b.blockNumber || a.transactionIndex - b.transactionIndex);
 
     const owned = new Set<number>();
