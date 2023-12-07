@@ -104,7 +104,7 @@ export default function NFTCreatedCard({
         <CardContent sx={{ justifyContent: 'center', display: 'flex' }}>
           {currentUserAddress.toLowerCase() === item.maker.toLowerCase() && (
             <Button
-              disabled={parseInt(item.expirationTime) * 1000 > Date.now() || item.bestBidder != ''}
+              disabled={item.bestPrice != ''}
               onClick={() => cancel(item)}
               variant='outlined'
               sx={{
@@ -125,9 +125,7 @@ export default function NFTCreatedCard({
           {item.auction.toString() == 'true' &&
             currentUserAddress.toLowerCase() === item.maker.toLowerCase() && (
               <Button
-                disabled={
-                  parseInt(item.expirationTime) * 1000 > Date.now() || item.bestBidder != ''
-                }
+                disabled={parseInt(item.expirationTime) * 1000 > Date.now() || item.bestPrice == ''}
                 onClick={() => accept(item)}
                 variant='outlined'
                 sx={{
