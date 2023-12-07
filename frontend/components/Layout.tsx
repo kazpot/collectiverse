@@ -67,15 +67,15 @@ export default function Layout({ title, description, children }: Props) {
       // check if the user is signed up
       const result = await isUser(currentUserAddress);
       if (result) {
-        setSigned(result);
-      }
+        // check connection to topos testnet
+        if (chainId === 2359) {
+          setTopSnackOpen(false);
+        } else {
+          setTopSnackOpen(true);
+          setTopSnackText('You are not connected to topos testnet!');
+        }
 
-      // check connection to topos testnet
-      if (chainId === 2359) {
-        setTopSnackOpen(false);
-      } else {
-        setTopSnackOpen(true);
-        setTopSnackText('You are not connected to topos testnet!');
+        setSigned(result);
       }
     }
     init();
