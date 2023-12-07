@@ -104,7 +104,7 @@ export default function NFTCreatedCard({
         <CardContent sx={{ justifyContent: 'center', display: 'flex' }}>
           {currentUserAddress.toLowerCase() === item.maker.toLowerCase() && (
             <Button
-              disabled={item.bestPrice != ''}
+              disabled={item.bestBidder != ''}
               onClick={() => cancel(item)}
               variant='outlined'
               sx={{
