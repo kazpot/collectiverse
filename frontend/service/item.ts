@@ -80,10 +80,9 @@ export const getNFTCollectionsByMaker = async (
 export const getMinter = async (tokenId: number): Promise<string> => {
   const nftOwnerFilter = nft.filters.Transfer(zeroAddress, null, ethers.BigNumber.from(tokenId));
   const latestBlockNumber = await provider.getBlockNumber();
-  const nftEvents: ethers.Event[] = await nft.queryFilter(
-    nftOwnerFilter,
-    latestBlockNumber - 10000,
-  );
+
+  // NOTE: public node block range is limited
+  const nftEvents: ethers.Event[] = await nft.queryFilter(nftOwnerFilter, latestBlockNumber - 1000);
   const owner = nftEvents[0].args?.[1];
   return owner;
 };
@@ -100,7 +99,9 @@ export const getUserItems = async (userAddress: string): Promise<UserItem[]> => 
 
     // Transfer(from, to, tokenId)
     const eventFilter = nft.filters.Transfer(null, userAddress, null);
-    const events: ethers.Event[] = await nft.queryFilter(eventFilter, latestBlockNumber - 10000);
+
+    // NOTE: public node block range is limited
+    const events: ethers.Event[] = await nft.queryFilter(eventFilter, latestBlockNumber - 1000);
 
     if (!events.length || events.length === 0) {
       return [];
@@ -118,9 +119,11 @@ export const getUserItems = async (userAddress: string): Promise<UserItem[]> => 
       const nftOwnerFilter = nft.filters.Transfer(zeroAddress, null, tokenId);
 
       const latestBlockNumber = await provider.getBlockNumber();
+
+      // NOTE: public node block range is limited
       const nftEvents: ethers.Event[] = await nft.queryFilter(
         nftOwnerFilter,
-        latestBlockNumber - 10000,
+        latestBlockNumber - 1000,
       );
       const owner = nftEvents[0].args?.[1];
 
@@ -205,10 +208,9 @@ export const getBidOrders = async (sellItem: NFTCollection): Promise<BidOrder[]>
   const eventFilter = exchange.filters.OrderCreated(Side.Buy, sellItem.bestBidHash, zeroAddress);
 
   const latestBlockNumber = await provider.getBlockNumber();
-  const events: ethers.Event[] = await exchange.queryFilter(
-    eventFilter,
-    latestBlockNumber - 100000,
-  );
+
+  // NOTE: public node block range is limited
+  const events: ethers.Event[] = await exchange.queryFilter(eventFilter, latestBlockNumber - 1000);
 
   let buyItems: ethers.Event[] = [];
   for (let i = 0; i < events.length; i++) {
@@ -264,8 +266,9 @@ export const updateOwnedItems = async (
 
     const latestBlockNumber = await provider.getBlockNumber();
 
-    const receivedEvents = await nft.queryFilter(receivedFilter, latestBlockNumber - 10000);
-    const sentEvents = await nft.queryFilter(sentFilter, latestBlockNumber - 10000);
+    // NOTE: public node block range is limited
+    const receivedEvents = await nft.queryFilter(receivedFilter, latestBlockNumber - 1000);
+    const sentEvents = await nft.queryFilter(sentFilter, latestBlockNumber - 1000);
 
     const events = sentEvents
       .concat(receivedEvents)
