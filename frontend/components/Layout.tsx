@@ -27,7 +27,6 @@ import Image from 'next/image';
 import { useSnackbar } from 'notistack';
 import { currentUserChanged } from '../actions/currentUser.actions';
 import TopSnackbar from './TopSnackbar';
-import { ethers } from 'ethers';
 import { chainIdChainged } from '../actions/chainId.actions';
 
 type Props = {
@@ -139,12 +138,12 @@ export default function Layout({ title, description, children }: Props) {
       return;
     }
 
-    const network = await ethers.getDefaultProvider().getNetwork();
-    dispatch(chainIdChainged(network.chainId.toString()));
-
     // get user addres from wallet extension
     const user = await getCurrentUser();
     const userAddress = await user.getAddress();
+
+    const chainId = await user.getChainId();
+    dispatch(chainIdChainged(chainId.toString()));
 
     // check if the user is signed up
     const result = await isUser(userAddress);
