@@ -36,9 +36,5 @@ yarn-error.log*
 /cache
 config.js
 
-# contract
-types
-artifacts
-
 # vscode
 .vscode
