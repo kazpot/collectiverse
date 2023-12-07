@@ -27,6 +27,8 @@ import Image from 'next/image';
 import { useSnackbar } from 'notistack';
 import { currentUserChanged } from '../actions/currentUser.actions';
 import TopSnackbar from './TopSnackbar';
+import { ethers } from 'ethers';
+import { chainIdChainged } from '../actions/chainId.actions';
 
 type Props = {
   title?: string;
@@ -51,15 +53,6 @@ export default function Layout({ title, description, children }: Props) {
 
   useEffect(() => {
     async function init() {
-      // check connection to topos testnet
-      console.log(chainId);
-      if (chainId === 2359) {
-        setTopSnackOpen(false);
-      } else {
-        setTopSnackOpen(true);
-        setTopSnackText('You are not connected to topos testnet!');
-      }
-
       // if browser don't have wallet extension (eg metamask)
       if (!window.ethereum) {
         setSigned(false);
@@ -77,9 +70,17 @@ export default function Layout({ title, description, children }: Props) {
       if (result) {
         setSigned(result);
       }
+
+      // check connection to topos testnet
+      if (chainId === 2359) {
+        setTopSnackOpen(false);
+      } else {
+        setTopSnackOpen(true);
+        setTopSnackText('You are not connected to topos testnet!');
+      }
     }
     init();
-  }, [currentUserAddress, dispatch]);
+  }, [chainId, currentUserAddress, dispatch]);
 
   const theme = createTheme({
     typography: {
@@ -137,6 +138,9 @@ export default function Layout({ title, description, children }: Props) {
       setSigned(false);
       return;
     }
+
+    const network = await ethers.getDefaultProvider().getNetwork();
+    dispatch(chainIdChainged(network.chainId.toString()));
 
     // get user addres from wallet extension
     const user = await getCurrentUser();
