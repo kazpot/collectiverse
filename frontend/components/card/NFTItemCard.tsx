@@ -50,7 +50,7 @@ export default function NFTItemCard({ item }: Props) {
               <Typography style={{ color: 'white' }}>
                 <span style={{ color: 'grey' }}>Current bid</span>
                 <br />
-                <span style={{ fontWeight: 'bold', fontSize: '15px' }}>
+                <span style={{ fontWeight: 'bold', fontSize: '14px' }}>
                   {!item.bestPrice ? item.price : item.bestPrice}{' '}
                   {chains[chainId] && chains[chainId].auctionSymbol}
                 </span>
@@ -59,7 +59,7 @@ export default function NFTItemCard({ item }: Props) {
               <Typography style={{ color: 'white' }}>
                 <span style={{ color: 'grey' }}>Fixed price</span>
                 <br />
-                <span style={{ fontWeight: 'bold', fontSize: '18px' }}>
+                <span style={{ fontWeight: 'bold', fontSize: '14px' }}>
                   {item.price} {chains[chainId] ? chains[chainId].nativeSymbol : nariveSymbol}
                 </span>
               </Typography>
@@ -69,7 +69,7 @@ export default function NFTItemCard({ item }: Props) {
               <Typography style={{ color: 'white' }}>
                 <span style={{ color: 'grey' }}>Ends in</span>
                 <br />
-                <span style={{ fontWeight: 'bold', fontSize: '18px' }}>
+                <span style={{ fontWeight: 'bold', fontSize: '12px' }}>
                   <Countdown date={parseInt(item.expirationTime) * 1000} renderer={renderer} />
                 </span>
               </Typography>
@@ -78,7 +78,7 @@ export default function NFTItemCard({ item }: Props) {
             <Typography style={{ color: 'white' }}>
               <span style={{ color: 'grey' }}>Status</span>
               <br />
-              <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{item.status}</span>
+              <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{item.status}</span>
             </Typography>
           </Stack>
         </CardContent>
