@@ -1,0 +1,1 @@
+If someone with ADMIN privileges in the database deletes a 'list,' it becomes unavailable for selection in the frontend. Therefore, in practice, the 'list' can be considered deleted. Additionally, if the contract owner executes the 'cancelOrderByViolation' function in the Exchange contract, it can be completely removed.
