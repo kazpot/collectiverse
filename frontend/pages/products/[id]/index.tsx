@@ -26,7 +26,7 @@ import {
 import ModalDialog from '../../../components/ModalDaialog';
 import { openModal } from '../../../actions/modal.actions';
 import { buyNowOrder } from '../../../service/order';
-import { getMinter } from '../../../service/item';
+//import { getMinter } from '../../../service/item';
 import { GetServerSideProps } from 'next';
 import ListModel from '../../../models/List';
 import db from '../../../utils/db';
@@ -381,11 +381,11 @@ export const getServerSideProps: GetServerSideProps = async ({ query }: { query:
       bidOrders = bidDocs.map(db.convertDocToObj);
     }
 
-    minter = await getMinter(parseInt(item.tokenId));
-    const userDoc = await User.find({ address: minter }).lean();
-    if (userDoc && userDoc.length > 0) {
-      minter = db.convertDocToObj(userDoc[0]);
-    }
+    // minter = await getMinter(parseInt(item.tokenId));
+    // const userDoc = await User.find({ address: minter }).lean();
+    // if (userDoc && userDoc.length > 0) {
+    //   minter = db.convertDocToObj(userDoc[0]);
+    // }
 
     const makerDoc = await User.find({ address: item.maker }).lean();
     if (makerDoc && makerDoc.length > 0) {
