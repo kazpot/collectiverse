@@ -1,6 +1,6 @@
-The `List` button is located under the `OWNED` tab for your owned tokens on the profile page.
+The `LIST` button is located under the `OWNED` tab for your owned tokens on the profile page.
 
-1. Click the `List` button on the NFT
+1. Click the `LIST` button on the NFT
 2. Choose tags (optional)
 3. Choose collection (optional)
 4. Choose category.
