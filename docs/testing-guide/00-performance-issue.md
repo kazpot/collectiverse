@@ -4,5 +4,5 @@ Due to the limitation of retrieving event logs 1000 blocks at a time using the j
 
 Affected areas:
 
-- 6-accept-auction
-- 8-update
+- 07-accept-bid.md
+- 10-update.md
