@@ -1,4 +1,6 @@
-The `PLACE BID` button on the product page allows the buyer to place a bid on the NFT with a specified price.
+### PLACE BID
+
+`PLACE BID` allows you to participate in the auction of an NFT and place a bid price. The `PLACE BID` button on the product page enables the buyer to place a bid on the NFT with a specified price.
 
 1. Choose a wallet different from the one used to create the 'buy now' deal.
 2. On the top page or the Market page, select the NFT that you want to buy.

@@ -1,3 +1,5 @@
+### Create
+
 The `Create` option in the top menu allows the seller to mint and list NFTs simultaneously.
 
 1. Go to the `Create` option in the top menu.
