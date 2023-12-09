@@ -1,6 +1,6 @@
 ### Create
 
-The `Create` option in the top menu allows the seller to mint and list NFTs simultaneously.
+The `Create` option in the top menu allows the seller to mint and list NFTs simultaneously. When the seller confirms a listing at a certain price, the NFT is transferred to an escrow account
 
 1. Go to the `Create` option in the top menu.
 2. Choose an image for NFT conversion using the file selection.

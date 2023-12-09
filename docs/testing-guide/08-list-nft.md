@@ -1,6 +1,6 @@
 ### LIST
 
-`LIST` allows the seller to list their owned NFTs on the CollectiVerse NFT marketplace. The `LIST` button is located under the `OWNED` tab for your owned tokens on the profile page. To do this, you must already own an NFT, and it should be displayed under the `OWNED` tab. If you own an NFT but it's not reflected, please refer to `8-update.md` for guidance.
+`LIST` allows the seller to list their owned NFTs on the CollectiVerse NFT marketplace. The `LIST` button is located under the `OWNED` tab for your owned tokens on the profile page. To do this, you must already own an NFT, and it should be displayed under the `OWNED` tab. If you own an NFT but it's not reflected, please refer to `10-update.md` for guidance.
 
 1. Click `TOPOS:{Your wallet address}` in the right top corner and select the `View Profile` option.
 1. Click the `LIST` button on the NFT under the `OWNED` tab
