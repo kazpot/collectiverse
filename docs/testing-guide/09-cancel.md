@@ -5,4 +5,4 @@
 1. Click `TOPOS:{Your wallet address}` in the right top corner and select the `View Profile` option.
 1. Click the `CANCEL` button on the NFT under the `CREATED` tab
 1. Click `CANCEL`.
-1. Metamask Operation: Sign Request > Sign > Confirm > Contract interaction > Confirm > Sign Request > Sign
+1. Metamask Operation: Sign Request > Sign > Confirm > CANCEL ORDER (Contract interaction) > Confirm > Sign Request > Sign
